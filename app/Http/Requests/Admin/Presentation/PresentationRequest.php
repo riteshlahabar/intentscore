@@ -1,0 +1,4 @@
+<?php
+namespace App\Http\Requests\Admin\Presentation;
+use Illuminate\Foundation\Http\FormRequest;
+class PresentationRequest extends FormRequest { public function authorize():bool{return auth()->check();} public function rules():array{return ['client_id'=>'required|exists:clients,id','product_id'=>'required|exists:products,id','owner_id'=>'nullable|exists:users,id','title'=>'required|string|max:220','status'=>'required|in:draft,published,viewed,engaged,negotiation,won,lost,expired','price'=>'nullable|numeric|min:0','currency'=>'required|string|max:8','intro_message'=>'nullable|string|max:4000','client_requirements'=>'nullable|string|max:15000','recommended_solution'=>'nullable|string|max:15000','deliverables'=>'nullable|string|max:15000','implementation_timeline'=>'nullable|string|max:10000','support_details'=>'nullable|string|max:10000','terms'=>'nullable|string|max:15000','valid_until'=>'nullable|date'];} }

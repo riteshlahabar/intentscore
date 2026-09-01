@@ -1,0 +1,198 @@
+<?php
+
+namespace App\Http\Controllers\Admin\Lead;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Lead\LeadRequest;
+use App\Models\Client\Client;
+use App\Models\Lead\Lead;
+use App\Models\Product\Product;
+use App\Models\User;
+use App\Services\Common\AccessService;
+use App\Services\ImportExport\CsvService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+
+class LeadController extends Controller
+{
+    public function __construct(
+        private CsvService $csv,
+        private AccessService $access,
+    ) {}
+
+    public function index(Request $request)
+    {
+        $leads = $this->filteredQuery($request)
+            ->with(['client', 'product', 'owner'])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.leads.index', compact('leads') + [
+            'products' => Product::orderBy('name')->get(),
+            'users' => $this->assignableUsers(),
+        ]);
+    }
+
+    public function create()
+    {
+        return view('admin.leads.form', ['lead' => new Lead] + $this->formOptions());
+    }
+
+    public function store(LeadRequest $request)
+    {
+        $data = $request->validated();
+        $this->assertRelatedClientAccess($data['client_id'] ?? null);
+        $data['owner_id'] = $this->access->enforceOwner($data['owner_id'] ?? null) ?: auth()->id();
+        Lead::create($data);
+
+        return redirect()->route('admin.leads.index')->with('success', 'Lead created.');
+    }
+
+    public function edit(Lead $lead)
+    {
+        $this->access->assertOwner($lead->owner_id);
+
+        return view('admin.leads.form', compact('lead') + $this->formOptions());
+    }
+
+    public function update(LeadRequest $request, Lead $lead)
+    {
+        $this->access->assertOwner($lead->owner_id);
+
+        $data = $request->validated();
+        $this->assertRelatedClientAccess($data['client_id'] ?? null);
+        $data['owner_id'] = $this->access->enforceOwner($data['owner_id'] ?? $lead->owner_id);
+        $lead->update($data);
+
+        return redirect()->route('admin.leads.index')->with('success', 'Lead updated.');
+    }
+
+    public function destroy(Lead $lead)
+    {
+        $this->access->assertOwner($lead->owner_id);
+        $lead->delete();
+
+        return back()->with('success', 'Lead moved to trash.');
+    }
+
+    public function export(Request $request)
+    {
+        $rows = $this->filteredQuery($request)
+            ->with(['client', 'product'])
+            ->get()
+            ->map(fn (Lead $lead) => [
+                $lead->title,
+                $lead->client?->company_name,
+                $lead->product?->name,
+                $lead->source,
+                $lead->status,
+                $lead->priority,
+                $lead->expected_value,
+                $lead->next_follow_up_at?->format('Y-m-d'),
+                $lead->requirement,
+                $lead->notes,
+            ]);
+
+        return $this->csv->download(
+            'leads-'.now()->format('Ymd-His').'.csv',
+            ['title', 'client', 'product', 'source', 'status', 'priority', 'expected_value', 'next_follow_up_at', 'requirement', 'notes'],
+            $rows,
+        );
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:csv,txt|max:5120']);
+        $count = 0;
+
+        foreach ($this->csv->read($request->file('file')) as $row) {
+            if (empty($row['title'])) {
+                continue;
+            }
+
+            $client = null;
+            if (! empty($row['client'])) {
+                $identity = ['company_name' => mb_substr($row['client'], 0, 255)];
+                if ($this->access->isSalesperson()) {
+                    $identity['owner_id'] = auth()->id();
+                }
+                $client = Client::firstOrCreate($identity, ['status' => 'prospect', 'owner_id' => auth()->id()]);
+            }
+
+            $product = ! empty($row['product']) ? Product::where('name', $row['product'])->first() : null;
+            $status = in_array($row['status'] ?? 'new', ['new', 'contacted', 'demo_sent', 'proposal_sent', 'negotiation', 'won', 'lost'], true) ? $row['status'] : 'new';
+            $priority = in_array($row['priority'] ?? 'medium', ['low', 'medium', 'high', 'urgent'], true) ? $row['priority'] : 'medium';
+
+            Lead::create([
+                'title' => mb_substr($row['title'], 0, 200),
+                'client_id' => $client?->id,
+                'product_id' => $product?->id,
+                'source' => isset($row['source']) ? mb_substr($row['source'], 0, 40) : null,
+                'status' => $status,
+                'priority' => $priority,
+                'expected_value' => is_numeric($row['expected_value'] ?? null) ? $row['expected_value'] : null,
+                'next_follow_up_at' => ! empty($row['next_follow_up_at']) ? $row['next_follow_up_at'] : null,
+                'requirement' => $row['requirement'] ?? null,
+                'notes' => $row['notes'] ?? null,
+                'owner_id' => auth()->id(),
+            ]);
+            $count++;
+        }
+
+        return back()->with('success', "Imported {$count} leads.");
+    }
+
+    private function filteredQuery(Request $request): Builder
+    {
+        $query = $this->access->scopeOwned(Lead::query());
+
+        if ($request->filled('q')) {
+            $term = $request->string('q')->toString();
+            $query->where(fn (Builder $builder) => $builder
+                ->where('title', 'like', "%{$term}%")
+                ->orWhereHas('client', fn (Builder $client) => $client->where('company_name', 'like', "%{$term}%")));
+        }
+
+        foreach (['status', 'source', 'priority', 'product_id', 'owner_id'] as $field) {
+            if ($request->filled($field)) {
+                $query->where($field, $request->input($field));
+            }
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        return $query;
+    }
+
+    private function formOptions(): array
+    {
+        return [
+            'clients' => $this->access->scopeOwned(Client::orderBy('company_name'))->get(),
+            'products' => Product::where('status', 'active')->orderBy('name')->get(),
+            'users' => $this->assignableUsers(),
+        ];
+    }
+
+    private function assertRelatedClientAccess(?int $clientId): void
+    {
+        if (! $clientId) {
+            return;
+        }
+
+        $client = Client::findOrFail($clientId);
+        $this->access->assertOwner($client->owner_id);
+    }
+
+    private function assignableUsers()
+    {
+        return $this->access->isSalesperson()
+            ? User::whereKey(auth()->id())->get()
+            : User::where('status', 'active')->orderBy('name')->get();
+    }
+}
