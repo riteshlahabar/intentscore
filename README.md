@@ -155,12 +155,10 @@ The system intentionally does not request precise GPS location. Country/city are
 
 ## Roles
 
-- `super_admin` — full access
-- `admin` — full administration
-- `sales_manager` — sales/product/analytics access
+- `admin` — full access: users, settings, products, and every client/lead/presentation
 - `salesperson` — own clients, leads, presentations and analytics only
 
-Product master is protected from salesperson access. User/settings management is restricted to super admins/admins.
+Product master and User/Settings management are restricted to admins.
 
 ## Main folders
 

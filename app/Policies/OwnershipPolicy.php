@@ -7,7 +7,7 @@ use App\Services\Common\AccessService;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Shared "salesperson may only act on their own record; admin/sales_manager see
+ * Shared "salesperson may only act on their own record; admin sees
  * everything" rule used by every owned module (Prospects, Presentations, Clients,
  * Leads, Follow-ups). Centralising it here means a new controller action is
  * authorized correctly by construction - via Gate::authorize()/authorizeResource()

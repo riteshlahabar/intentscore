@@ -24,8 +24,7 @@ class SmartDashboardController extends Controller
             'high_intent' => IntentScore::where('intent_level', 'HIGH INTENT')->count(),
         ];
 
-        $salespeople = User::whereIn('role', ['salesperson', 'sales_manager', 'admin', 'super_admin'])
-            ->orderBy('name')
+        $salespeople = User::orderBy('name')
             ->get()
             ->map(function (User $user) {
                 $prospectIds = Prospect::where('salesperson_id', $user->id)->pluck('id');

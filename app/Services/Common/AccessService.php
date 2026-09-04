@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class AccessService
 {
-    private const PRIVILEGED_ROLES = ['super_admin', 'admin', 'sales_manager'];
+    private const PRIVILEGED_ROLES = ['admin'];
 
     public static function isPrivileged(User $user): bool
     {

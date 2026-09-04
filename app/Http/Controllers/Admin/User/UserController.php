@@ -57,8 +57,6 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
-        $this->assertCanManage($user);
-
         return view('admin.users.form', [
             'user' => $user,
             'roles' => $this->assignableRoles($user),
@@ -67,7 +65,6 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        $this->assertCanManage($user);
         $data = $this->validateData($request, $user);
 
         if ($user->id === auth()->id() && ($data['status'] ?? 'active') !== 'active') {
@@ -91,7 +88,6 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
-        $this->assertCanManage($user);
         abort_if($user->id === auth()->id(), 422, 'You cannot delete your own account.');
 
         $this->upload->delete($user->photo);
@@ -133,9 +129,6 @@ class UserController extends Controller
             }
 
             $user = User::firstOrNew(['email' => $email]);
-            if ($user->exists) {
-                $this->assertCanManage($user);
-            }
 
             $requestedRole = $row['role'] ?? 'salesperson';
             $role = in_array($requestedRole, $this->assignableRoles($user), true)
@@ -208,22 +201,6 @@ class UserController extends Controller
 
     private function assignableRoles(?User $user = null): array
     {
-        if (auth()->user()->role === 'super_admin') {
-            return ['super_admin', 'admin', 'sales_manager', 'salesperson'];
-        }
-
-        // Admins can view super admins, but they cannot create, demote, edit or replace them.
-        if ($user?->role === 'super_admin') {
-            return ['super_admin'];
-        }
-
-        return ['admin', 'sales_manager', 'salesperson'];
-    }
-
-    private function assertCanManage(User $user): void
-    {
-        if ($user->role === 'super_admin' && auth()->user()->role !== 'super_admin') {
-            abort(403, 'Only a super admin can manage another super admin account.');
-        }
+        return ['admin', 'salesperson'];
     }
 }
