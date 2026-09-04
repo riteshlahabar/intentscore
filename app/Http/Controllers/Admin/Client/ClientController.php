@@ -49,7 +49,7 @@ class ClientController extends Controller
 
     public function edit(Client $client)
     {
-        $this->access->assertOwner($client->owner_id);
+        $this->authorize('update', $client);
 
         return view('admin.clients.form', [
             'client' => $client,
@@ -59,7 +59,7 @@ class ClientController extends Controller
 
     public function update(ClientRequest $request, Client $client)
     {
-        $this->access->assertOwner($client->owner_id);
+        $this->authorize('update', $client);
 
         $data = $request->validated();
         $data['owner_id'] = $this->access->enforceOwner($data['owner_id'] ?? $client->owner_id);
@@ -70,7 +70,7 @@ class ClientController extends Controller
 
     public function destroy(Client $client)
     {
-        $this->access->assertOwner($client->owner_id);
+        $this->authorize('delete', $client);
         $client->delete();
 
         return back()->with('success', 'Client moved to trash.');

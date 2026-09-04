@@ -57,7 +57,7 @@ class PresentationController extends Controller
 
     public function edit(Presentation $presentation)
     {
-        $this->access->assertOwner($presentation->owner_id);
+        $this->authorize('update', $presentation);
         $presentation->load(['sections', 'client', 'product.features', 'product.demoLinks', 'product.media']);
 
         return view('admin.presentations.form', compact('presentation') + $this->formOptions() + [
@@ -67,7 +67,7 @@ class PresentationController extends Controller
 
     public function update(PresentationRequest $request, Presentation $presentation)
     {
-        $this->access->assertOwner($presentation->owner_id);
+        $this->authorize('update', $presentation);
 
         $data = $request->validated();
         $this->assertRelatedClientAccess((int) $data['client_id']);
@@ -83,7 +83,7 @@ class PresentationController extends Controller
 
     public function updateSections(Request $request, Presentation $presentation)
     {
-        $this->access->assertOwner($presentation->owner_id);
+        $this->authorize('update', $presentation);
 
         $data = $request->validate([
             'sections' => 'required|array',
@@ -108,7 +108,7 @@ class PresentationController extends Controller
 
     public function regenerateToken(Presentation $presentation)
     {
-        $this->access->assertOwner($presentation->owner_id);
+        $this->authorize('update', $presentation);
         $presentation->update(['public_token' => $this->builder->makeToken()]);
 
         return back()->with('success', 'Public link regenerated. Old link no longer works.');
@@ -116,7 +116,7 @@ class PresentationController extends Controller
 
     public function destroy(Presentation $presentation)
     {
-        $this->access->assertOwner($presentation->owner_id);
+        $this->authorize('delete', $presentation);
         $presentation->delete();
 
         return back()->with('success', 'Presentation moved to trash.');
@@ -223,7 +223,7 @@ class PresentationController extends Controller
     private function assertRelatedClientAccess(int $clientId): void
     {
         $client = Client::findOrFail($clientId);
-        $this->access->assertOwner($client->owner_id);
+        $this->authorize('update', $client);
     }
 
     private function formOptions(): array

@@ -26,7 +26,7 @@ Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:6
 Route::get('/p/{token}', [PublicPresentationController::class, 'show'])->name('presentation.public');
 Route::post('/p/{token}/track', [PublicPresentationController::class, 'track'])->middleware('throttle:240,1')->name('presentation.track');
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin,admin,sales_manager,salesperson'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin,admin,sales_manager,salesperson', 'throttle:200,1'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', SearchController::class)->name('search');
@@ -86,7 +86,7 @@ Route::get('/s/{slug}', [PublicSmartPageController::class, 'show'])->name('smart
 Route::post('/s/{slug}/track', [PublicSmartPageController::class, 'track'])
     ->middleware('throttle:240,1')->name('smart.track');
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin,admin,sales_manager,salesperson'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin,admin,sales_manager,salesperson', 'throttle:200,1'])->group(function () {
     Route::get('prospects', [ProspectController::class, 'index'])->name('prospects.index');
     Route::get('prospects/create', [ProspectController::class, 'create'])->name('prospects.create');
     Route::post('prospects', [ProspectController::class, 'store'])->name('prospects.store');

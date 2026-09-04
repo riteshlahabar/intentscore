@@ -113,7 +113,7 @@ class ProspectController extends Controller
     /** Prospect detail screen (PDF section 13). */
     public function show(Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('view', $prospect);
 
         $prospect->load(['intentScore', 'smartLink', 'smartPage.sections', 'salesperson']);
 
@@ -130,7 +130,7 @@ class ProspectController extends Controller
 
     public function edit(Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         return view('admin.prospects.create', [
             'prospect' => $prospect,
@@ -141,7 +141,7 @@ class ProspectController extends Controller
 
     public function update(ProspectRequest $request, Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         $data = $request->validated();
         $prospect->update([
@@ -170,7 +170,7 @@ class ProspectController extends Controller
 
     public function destroy(Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('delete', $prospect);
         $prospect->delete();
 
         return redirect()->route('admin.prospects.index')->with('success', 'Prospect moved to trash.');
@@ -179,7 +179,7 @@ class ProspectController extends Controller
     /** Sales status dropdown on the detail screen (PDF section 13). */
     public function updateStatus(Request $request, Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         $data = $request->validate([
             'status' => ['required', Rule::in(Prospect::STATUSES)],
@@ -200,7 +200,7 @@ class ProspectController extends Controller
 
     public function regenerateLink(Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         $prospect->smartLink?->update(['slug' => $this->smartLinks->makeSlug()]);
 

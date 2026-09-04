@@ -34,7 +34,7 @@ class AnalyticsController extends Controller
 
     public function show(Presentation $presentation)
     {
-        $this->access->assertOwner($presentation->owner_id);
+        $this->authorize('view', $presentation);
 
         $presentation->load([
             'client',

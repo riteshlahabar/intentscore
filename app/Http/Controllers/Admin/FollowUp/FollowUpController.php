@@ -59,14 +59,14 @@ class FollowUpController extends Controller
 
     public function edit(FollowUp $followUp): View
     {
-        $this->assertFollowUpAccess($followUp);
+        $this->authorize('update', $followUp);
 
         return view('admin.followups.form', compact('followUp') + $this->formOptions());
     }
 
     public function update(Request $request, FollowUp $followUp): RedirectResponse
     {
-        $this->assertFollowUpAccess($followUp);
+        $this->authorize('update', $followUp);
         $oldLead = $followUp->lead;
         $data = $this->validateData($request);
         $newLead = $this->accessibleLead((int) $data['lead_id']);
@@ -84,7 +84,7 @@ class FollowUpController extends Controller
 
     public function destroy(FollowUp $followUp): RedirectResponse
     {
-        $this->assertFollowUpAccess($followUp);
+        $this->authorize('delete', $followUp);
         $lead = $followUp->lead;
         $followUp->delete();
         $this->syncLeadNextFollowUp($lead);
@@ -214,12 +214,6 @@ class FollowUpController extends Controller
     private function accessibleLead(int $leadId): Lead
     {
         return $this->access->scopeOwned(Lead::query())->findOrFail($leadId);
-    }
-
-    private function assertFollowUpAccess(FollowUp $followUp): void
-    {
-        $followUp->loadMissing('lead');
-        $this->access->assertOwner($followUp->lead?->owner_id);
     }
 
     private function syncLeadNextFollowUp(Lead $lead): void

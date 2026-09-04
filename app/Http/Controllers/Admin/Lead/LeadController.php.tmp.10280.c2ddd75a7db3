@@ -186,7 +186,7 @@ class LeadController extends Controller
         }
 
         $client = Client::findOrFail($clientId);
-        $this->authorize('update', $client);
+        $this->access->assertOwner($client->owner_id);
     }
 
     private function assignableUsers()

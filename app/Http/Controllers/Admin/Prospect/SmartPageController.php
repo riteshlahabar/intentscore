@@ -23,7 +23,7 @@ class SmartPageController extends Controller
 
     public function edit(Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         $page = $prospect->smartPage()->with('sections')->firstOrFail();
 
@@ -36,7 +36,7 @@ class SmartPageController extends Controller
 
     public function update(Request $request, Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         $page = $prospect->smartPage()->with('sections')->firstOrFail();
 
@@ -100,7 +100,7 @@ class SmartPageController extends Controller
 
     public function uploadPortfolio(Request $request, Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         $request->validate([
             'image' => ['required', 'file', 'image', 'max:4096'],
@@ -126,7 +126,7 @@ class SmartPageController extends Controller
 
     public function deletePortfolio(Request $request, Prospect $prospect)
     {
-        $this->access->assertOwner($prospect->salesperson_id);
+        $this->authorize('update', $prospect);
 
         $index = (int) $request->validate(['index' => ['required', 'integer', 'min:0']])['index'];
 
