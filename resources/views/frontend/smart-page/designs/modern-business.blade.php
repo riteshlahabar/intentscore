@@ -305,6 +305,7 @@
 
 <footer class="footer footer-light">
     <div class="container">
+        <div class="footer-py-60">
         <div class="row">
             <div class="col-lg-4 col-12 mb-4 mb-md-0">
                 <span class="h5 fw-bold d-block mb-3">{{ $company }}</span>
@@ -334,6 +335,7 @@
                 @endif
             </div><!--end col-->
         </div><!--end row-->
+        </div>
     </div><!--end container-->
 
     <div class="footer-py-30 border-top">

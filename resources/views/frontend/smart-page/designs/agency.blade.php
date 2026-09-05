@@ -297,6 +297,7 @@
 
 <footer class="footer">
     <div class="container">
+        <div class="footer-py-60">
         <div class="row">
             <div class="col-lg-4 col-12 mb-4 mb-md-0">
                 <span class="h5 text-white fw-bold d-block mb-3">{{ $company }}</span>
@@ -325,6 +326,7 @@
                 <a href="{{ $page->cta_url ?: '#sec-cta' }}" class="btn btn-soft-primary" data-track="{{ $ctaEvent }}" data-section="cta" data-label="Footer CTA">{{ $page->cta_text }}</a>
                 @endif
             </div>
+        </div>
         </div>
     </div>
 
