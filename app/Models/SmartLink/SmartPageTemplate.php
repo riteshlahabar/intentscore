@@ -30,6 +30,23 @@ class SmartPageTemplate extends Model
         return self::SECTION_LABELS[$type] ?? ucwords(str_replace('_', ' ', $type));
     }
 
+    /** Short labels for the sticky nav bar - the full labels above are too long to fit as a single-row menu. */
+    public const NAV_LABELS = [
+        'intro' => 'Intro',
+        'website_audit' => 'Website',
+        'google_audit' => 'Google',
+        'instagram_audit' => 'Instagram',
+        'free_tools' => 'Tools',
+        'solution' => 'Solution',
+        'portfolio' => 'Portfolio',
+        'cta' => 'Contact',
+    ];
+
+    public static function navLabel(string $type): string
+    {
+        return self::NAV_LABELS[$type] ?? self::sectionLabel($type);
+    }
+
     /** Every ported design a template can render as. Null/unknown falls back to the classic view. */
     public const DESIGNS = ['agency', 'consulting', 'social-marketing', 'modern-business'];
 

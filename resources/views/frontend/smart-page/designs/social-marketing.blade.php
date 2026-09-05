@@ -68,7 +68,7 @@
                 <li><a href="#home">Home</a></li>
                 @foreach($ordered as $s)
                     @if($s->section_type !== 'cta')
-                        <li><a href="#sec-{{ $s->section_type }}">{{ $s->title ?: \App\Models\SmartLink\SmartPageTemplate::sectionLabel($s->section_type) }}</a></li>
+                        <li><a href="#sec-{{ $s->section_type }}">{{ \App\Models\SmartLink\SmartPageTemplate::navLabel($s->section_type) }}</a></li>
                     @endif
                 @endforeach
             </ul>
