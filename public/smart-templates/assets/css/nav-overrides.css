@@ -1,2 +1,6 @@
 /* Taller sticky header for the Smart Page designs (Landrick's default is quite slim for our text-based brand + longer menu). */
 #topnav .container{padding-top:16px;padding-bottom:16px}
+
+/* The theme fades the header from transparent to solid white over .5s on scroll, which lets
+   hero content ghost through it briefly. Make that fade effectively instant instead. */
+#topnav{transition:all .005s ease}
