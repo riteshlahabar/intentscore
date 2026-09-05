@@ -46,7 +46,10 @@
 
 <header id="topnav" class="defaultscroll sticky">
     <div class="container">
-        <a class="logo" href="#home">
+        <a class="logo d-flex align-items-center" href="#home">
+            @if(!empty($settings['company_logo']))
+                <img src="{{ asset($settings['company_logo']) }}" alt="" style="height:32px;margin-right:10px">
+            @endif
             <span class="h4 text-primary fw-bold mb-0">{{ $company }}</span>
         </a>
 
