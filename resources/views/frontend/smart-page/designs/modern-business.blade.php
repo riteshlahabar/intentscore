@@ -307,7 +307,7 @@
     <div class="container">
         <div class="footer-py-60">
         <div class="row">
-            <div class="col-lg-4 col-12 mb-4 mb-md-0">
+            <div class="col-lg-4 col-12 mb-4 mb-lg-0">
                 <span class="h5 fw-bold d-block mb-3">{{ $company }}</span>
                 @if($settings['company_about'] ?? false)<p class="mt-2">{{ $settings['company_about'] }}</p>@endif
                 <ul class="list-unstyled footer-list mt-3">
@@ -316,7 +316,7 @@
                 </ul>
             </div><!--end col-->
 
-            <div class="col-lg-4 col-md-6 col-12 mt-4 mt-sm-0 ps-lg-4">
+            <div class="col-lg-4 col-md-6 col-12 mb-4 mb-md-0 ps-lg-5">
                 <h5 class="footer-head">Quick Links</h5>
                 <ul class="list-unstyled footer-list mt-4">
                     @foreach($ordered as $s)
@@ -327,7 +327,7 @@
                 </ul>
             </div><!--end col-->
 
-            <div class="col-lg-4 col-md-6 col-12 mt-4 mt-sm-0">
+            <div class="col-lg-4 col-md-6 col-12">
                 <h5 class="footer-head">Get In Touch</h5>
                 @if($ctaSection)
                 <p class="mt-4">{{ $ctaSection->content ?: 'Happy to walk through any of this in a short call.' }}</p>
