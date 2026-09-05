@@ -308,7 +308,7 @@
                 </ul>
             </div>
 
-            <div class="col-lg-4 col-md-6 col-12 mt-4 mt-sm-0">
+            <div class="col-lg-4 col-md-6 col-12 mt-4 mt-sm-0 text-center">
                 <h5 class="footer-head">Quick Links</h5>
                 <ul class="list-unstyled footer-list mt-4">
                     @foreach($ordered as $s)
