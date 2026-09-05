@@ -10,6 +10,7 @@ use App\Http\Controllers\Frontend\SmartPage\PublicSmartPageController;
 use App\Http\Controllers\Admin\Prospect\ProspectController;
 use App\Http\Controllers\Admin\Prospect\SmartPageController;
 use App\Http\Controllers\Admin\Prospect\SmartDashboardController;
+use App\Http\Controllers\Admin\Prospect\SmartTemplateController;
 use App\Http\Controllers\Admin\Prospect\IntentSettingController;
 
 Route::get('/', fn () => redirect()->route('login'));
@@ -46,6 +47,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,salesper
     Route::put('prospects/{prospect}/page', [SmartPageController::class, 'update'])->name('prospects.page.update');
     Route::post('prospects/{prospect}/page/portfolio', [SmartPageController::class, 'uploadPortfolio'])->name('prospects.page.portfolio.store');
     Route::delete('prospects/{prospect}/page/portfolio', [SmartPageController::class, 'deletePortfolio'])->name('prospects.page.portfolio.destroy');
+
+    Route::get('smart-templates', [SmartTemplateController::class, 'index'])->name('templates.index');
+    Route::get('smart-templates/{template}/preview', [SmartTemplateController::class, 'preview'])->name('templates.preview');
 
     Route::middleware('role:admin')->group(function () {
         Route::get('smart-dashboard', [SmartDashboardController::class, 'index'])->name('smart.dashboard');

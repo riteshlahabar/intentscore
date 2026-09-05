@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend\SmartPage;
 use App\Http\Controllers\Controller;
 use App\Models\Setting\Setting;
 use App\Models\SmartLink\SmartLinkModel;
+use App\Models\SmartLink\SmartPageTemplate;
 use App\Services\SmartLink\SmartTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,12 @@ class PublicSmartPageController extends Controller
     {
         $page = $this->resolve($slug);
 
-        return view('frontend.smart-page.show', [
+        $design = $page->template?->design;
+        $view = in_array($design, SmartPageTemplate::DESIGNS, true)
+            ? "frontend.smart-page.designs.{$design}"
+            : 'frontend.smart-page.show';
+
+        return view($view, [
             'page' => $page,
             'prospect' => $page->prospect,
             'sections' => $page->sections->where('enabled', true),
@@ -48,7 +54,7 @@ class PublicSmartPageController extends Controller
 
         abort_unless($link->isActive(), 410, 'This link is no longer active.');
 
-        $page = $link->smartPage()->with(['prospect', 'sections'])->firstOrFail();
+        $page = $link->smartPage()->with(['prospect', 'sections', 'template'])->firstOrFail();
 
         abort_unless($page->status === 'published', 404);
 

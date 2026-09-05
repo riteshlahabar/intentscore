@@ -22,6 +22,8 @@ class SmartLinkSeeder extends Seeder
             SmartPageTemplate::updateOrCreate(['slug' => $template['slug']], $template);
         }
 
+        SmartPageTemplate::where('slug', 'short-pitch')->delete();
+
         $admin = User::where('email', 'admin@example.com')->first();
         $template = SmartPageTemplate::where('slug', 'grooming-business')->first();
 
