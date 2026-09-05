@@ -60,7 +60,7 @@
                 Accept: 'application/json',
                 'X-CSRF-TOKEN': token ? token.content : ''
             },
-            body: json,
+            body: JSON.stringify(body),
             keepalive: true
         }).catch(function () {});
     }
