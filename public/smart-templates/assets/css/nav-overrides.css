@@ -1,6 +1,4 @@
 /* Taller sticky header for the Smart Page designs (Landrick's default is quite slim for our text-based brand + longer menu). */
 #topnav .container{padding-top:16px;padding-bottom:16px}
 
-/* The theme's header is fully transparent until scrolled 50px, which lets hero content show
-   through it. Keep it solid white from the start so nothing can ever show through. */
-#topnav{background-color:#fff!important;border:0;box-shadow:0 0 3px rgba(60,72,88,.15);transition:all .005s ease}
+#topnav{transition:all .005s ease}
