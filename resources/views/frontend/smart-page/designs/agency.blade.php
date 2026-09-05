@@ -2,8 +2,8 @@
     $company = $settings['company_name'] ?? 'Smart Links';
     $ordered = $sections->sortBy('display_order');
     $navSections = $ordered->where('section_type', '!=', 'cta')->values();
-    $navInline = $navSections->take(5);
-    $navMore = $navSections->slice(5);
+    $navInline = $navSections->take(4);
+    $navMore = $navSections->slice(4);
     $heading = $page->heading ?: $prospect->business_name;
     $ctaSection = $ordered->firstWhere('section_type', 'cta');
     $introSection = $ordered->firstWhere('section_type', 'intro');
