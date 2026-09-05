@@ -26,7 +26,14 @@
 
 <nav class="client-nav">
     <div class="client-nav-inner">
-        <a class="client-logo" href="#top"><img src="{{ asset('images/logo.svg') }}" alt="" style="height:30px">{{ $company }}</a>
+        <a class="client-logo" href="#top">
+            @if(!empty($settings['company_logo']))
+                <img src="{{ asset($settings['company_logo']) }}" alt="" style="height:30px">
+            @else
+                <span class="client-logo-mark">{{ strtoupper(substr($company, 0, 1)) }}</span>
+            @endif
+            {{ $company }}
+        </a>
         <div class="client-nav-links">
             @foreach($ordered as $s)
                 @if($s->section_type !== 'cta')
@@ -42,10 +49,23 @@
 
 <header class="hero" id="top">
     <div class="container-client">
-        <div class="section-head" style="max-width:820px;margin-bottom:0">
-            <div class="eyebrow">Prepared for you</div>
-            <h1>{{ $heading }}</h1>
-            <p>{{ $page->subheading ?: 'A few ideas we put together specifically for your business.' }}</p>
+        <div class="hero-grid">
+            <div class="section-head" style="max-width:640px;margin-bottom:0">
+                <div class="eyebrow">Prepared for you</div>
+                <h1>{{ $heading }}</h1>
+                <p>{{ $page->subheading ?: 'A few ideas we put together specifically for your business.' }}</p>
+                @if($ctaSection)
+                    <a class="btn-client" style="margin-top:22px" href="{{ $page->cta_url ?: '#sec-cta' }}" data-track="cta_clicked" data-section="cta" data-label="Hero CTA">{{ $page->cta_text }}</a>
+                @endif
+            </div>
+            <div class="hero-card">
+                <div class="mini">Prepared specifically for</div>
+                <h3>{{ $prospect->business_name }}</h3>
+                @if($prospect->industry)<div class="detail-row"><span>Industry</span><strong>{{ $prospect->industry }}</strong></div>@endif
+                @if($prospect->location)<div class="detail-row"><span>Location</span><strong>{{ $prospect->location }}</strong></div>@endif
+                @if($prospect->website)<div class="detail-row"><span>Website</span><strong>{{ $prospect->website }}</strong></div>@endif
+                @if($prospect->offer)<div class="detail-row"><span>Offer discussed</span><strong>{{ $prospect->offer }}</strong></div>@endif
+            </div>
         </div>
     </div>
 </header>
@@ -59,7 +79,7 @@
         @continue
     @endif
 
-    <section class="client-section {{ $alt ? 'alt' : '' }}" id="sec-{{ $type }}" data-section="{{ $type }}">
+    <section class="client-section reveal {{ $alt ? 'alt' : '' }}" id="sec-{{ $type }}" data-section="{{ $type }}">
         <div class="container-client">
 
             @if($type === 'intro')
@@ -195,7 +215,7 @@
 @endforeach
 
 @if($ctaSection)
-<section class="client-section" id="sec-cta" data-section="cta">
+<section class="client-section reveal" id="sec-cta" data-section="cta">
     <div class="container-client">
         <div class="contact-panel">
             <div>
@@ -281,6 +301,24 @@
             }
         });
     });
+})();
+</script>
+<script>
+(function () {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window) || !els.length) {
+        els.forEach(function (el) { el.classList.add('is-visible'); });
+        return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(function (el) { io.observe(el); });
 })();
 </script>
 </body>
