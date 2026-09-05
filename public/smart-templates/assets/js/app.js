@@ -146,8 +146,8 @@ function windowScroll() {
     const navbar = document.getElementById("topnav");
     if(navbar!=null){
         if (
-            document.body.scrollTop >= 50 ||
-            document.documentElement.scrollTop >= 50
+            document.body.scrollTop >= 2 ||
+            document.documentElement.scrollTop >= 2
         ) {
             navbar.classList.add("nav-sticky");
         } else {
