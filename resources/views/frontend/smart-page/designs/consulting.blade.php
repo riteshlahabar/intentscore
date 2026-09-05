@@ -40,6 +40,7 @@
 <link href="{{ asset('smart-templates/assets/libs/@mdi/font/css/materialdesignicons.min.css') }}" rel="stylesheet">
 <link href="{{ asset('smart-templates/assets/libs/@iconscout/unicons/css/line.css') }}" rel="stylesheet">
 <link href="{{ asset('smart-templates/assets/css/style.min.css') }}" rel="stylesheet">
+<link href="{{ asset('smart-templates/assets/css/nav-overrides.css') }}" rel="stylesheet">
 </head>
 <body id="smart-page" data-track-url="{{ $trackUrl }}">
 
