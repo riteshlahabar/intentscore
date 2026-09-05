@@ -1,6 +1,9 @@
 @php
     $company = $settings['company_name'] ?? 'Smart Links';
     $ordered = $sections->sortBy('display_order');
+    $navSections = $ordered->where('section_type', '!=', 'cta')->values();
+    $navInline = $navSections->take(5);
+    $navMore = $navSections->slice(5);
     $heading = $page->heading ?: $prospect->business_name;
     $ctaSection = $ordered->firstWhere('section_type', 'cta');
     $introSection = $ordered->firstWhere('section_type', 'intro');
@@ -66,11 +69,19 @@
         <div id="navigation">
             <ul class="navigation-menu">
                 <li><a href="#home">Home</a></li>
-                @foreach($ordered as $s)
-                    @if($s->section_type !== 'cta')
-                        <li><a href="#sec-{{ $s->section_type }}">{{ \App\Models\SmartLink\SmartPageTemplate::navLabel($s->section_type) }}</a></li>
-                    @endif
+                @foreach($navInline as $s)
+                    <li><a href="#sec-{{ $s->section_type }}">{{ \App\Models\SmartLink\SmartPageTemplate::navLabel($s->section_type) }}</a></li>
                 @endforeach
+                @if($navMore->isNotEmpty())
+                <li class="has-submenu">
+                    <a href="javascript:void(0)">More</a><span class="menu-arrow"></span>
+                    <ul class="submenu">
+                        @foreach($navMore as $s)
+                            <li><a href="#sec-{{ $s->section_type }}" class="sub-menu-item">{{ \App\Models\SmartLink\SmartPageTemplate::navLabel($s->section_type) }}</a></li>
+                        @endforeach
+                    </ul>
+                </li>
+                @endif
             </ul>
         </div>
     </div>
