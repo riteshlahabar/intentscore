@@ -24,7 +24,7 @@ class PageSpeedInsightsService
     public function audit(string $url, string $strategy): array
     {
         try {
-            $response = Http::timeout(170)->get(self::ENDPOINT, $this->params($url, $strategy));
+            $response = Http::timeout(170)->get(self::ENDPOINT.'?'.$this->query($url, $strategy));
         } catch (Throwable $e) {
             $response = $e;
         }
@@ -32,14 +32,24 @@ class PageSpeedInsightsService
         return $this->parse($response, $strategy);
     }
 
-    private function params(string $url, string $strategy): array
+    /**
+     * Google wants "category" repeated (category=performance&category=seo). Passing an
+     * array to the HTTP client would send category[0]=performance instead, which Google
+     * ignores - it then falls back to its default and returns performance only.
+     */
+    private function query(string $url, string $strategy): string
     {
-        return array_filter([
+        $query = http_build_query(array_filter([
             'url' => $url,
             'strategy' => $strategy,
-            'category' => ['performance', 'accessibility', 'best-practices', 'seo'],
             'key' => config('services.pagespeed.key'),
-        ]);
+        ]));
+
+        foreach (['performance', 'accessibility', 'best-practices', 'seo'] as $category) {
+            $query .= '&category='.$category;
+        }
+
+        return $query;
     }
 
     /** @return array<string,mixed> */

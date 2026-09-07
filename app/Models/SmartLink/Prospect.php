@@ -60,13 +60,9 @@ class Prospect extends Model
         return $this->hasMany(WebsiteAudit::class, 'prospect_id');
     }
 
-    public function latestMobileAudit(): HasOne
+    /** Each strategy keeps its own latest result, so re-running one never hides the other. */
+    public function latestAuditFor(string $strategy): ?WebsiteAudit
     {
-        return $this->hasOne(WebsiteAudit::class, 'prospect_id')->where('strategy', 'mobile')->latestOfMany();
-    }
-
-    public function latestDesktopAudit(): HasOne
-    {
-        return $this->hasOne(WebsiteAudit::class, 'prospect_id')->where('strategy', 'desktop')->latestOfMany();
+        return $this->websiteAudits()->where('strategy', $strategy)->latest('id')->first();
     }
 }

@@ -27,8 +27,8 @@ class PublicSmartPageController extends Controller
             'prospect' => $page->prospect,
             'sections' => $page->sections->where('enabled', true),
             'settings' => Setting::pluck('value', 'key'),
-            'mobileAudit' => $page->prospect->latestMobileAudit,
-            'desktopAudit' => $page->prospect->latestDesktopAudit,
+            'mobileAudit' => $page->prospect->latestAuditFor('mobile'),
+            'desktopAudit' => $page->prospect->latestAuditFor('desktop'),
         ]);
     }
 

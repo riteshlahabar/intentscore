@@ -129,8 +129,8 @@ class ProspectController extends Controller
             'visits' => $prospect->visits()->latest('started_at')->limit(100)->get(),
             'activities' => $prospect->salesActivities()->with('user')->latest()->get(),
             'scoreService' => $this->intentScore,
-            'latestMobileAudit' => $prospect->latestMobileAudit,
-            'latestDesktopAudit' => $prospect->latestDesktopAudit,
+            'latestMobileAudit' => $prospect->latestAuditFor('mobile'),
+            'latestDesktopAudit' => $prospect->latestAuditFor('desktop'),
         ]);
     }
 
