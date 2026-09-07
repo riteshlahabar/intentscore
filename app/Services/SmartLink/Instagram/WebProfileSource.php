@@ -47,12 +47,19 @@ class WebProfileSource implements ProfileSource
             throw new RuntimeException('No public Instagram account found for @'.$username.'.');
         }
 
-        if (in_array($response->status(), [401, 403], true) || $response->json('require_login')) {
-            throw new RuntimeException('Instagram now requires a login for public profile data, so it cannot be read without a provider. Set INSTAGRAM_SOURCE to a paid provider in your .env.');
-        }
-
-        if ($response->status() === 429) {
-            throw new RuntimeException('Instagram rate-limited this server. Try again later.');
+        /*
+         * 401, 403 and 429 are one refusal wearing three hats: Instagram serves the same
+         * "require_login" body with whichever code the edge decides on, and a host that
+         * gets 429 keeps getting it. Retrying does not help, so they share one message -
+         * telling a salesperson to "try again later" would just send them back to a
+         * button that cannot work.
+         */
+        if (in_array($response->status(), [401, 403, 429], true) || $response->json('require_login')) {
+            throw new RuntimeException(
+                'Instagram no longer serves public profile data without a login (HTTP '.$response->status().'), '
+                .'so this will not succeed on a retry. A provider has to be configured: register it in '
+                .'config/services.php under instagram.sources and point INSTAGRAM_SOURCE at it.'
+            );
         }
 
         if ($response->failed()) {
