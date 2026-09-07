@@ -189,6 +189,7 @@
                     @endforeach
                 </div>
                 @if($section->content)<p class="text-muted mt-4">{{ $section->content }}</p>@endif
+                @if($type === 'website_audit')@include('frontend.smart-page.partials.pagespeed-audit')@endif
             @endif
         </div>
     </section>

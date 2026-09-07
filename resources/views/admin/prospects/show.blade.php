@@ -113,42 +113,55 @@
             <div class="card-body">
                 @if(!$prospect->website)
                     <div class="empty-state"><i class="ri-global-line"></i><div class="mt-2">Add a website URL to this prospect to run a PageSpeed audit.</div></div>
-                @elseif(!$latestAudit)
+                @elseif(!$latestMobileAudit && !$latestDesktopAudit)
                     <div class="empty-state"><i class="ri-speed-up-line"></i><div class="mt-2">No audit run yet for {{ $prospect->website }}.</div></div>
-                @elseif($latestAudit->status === 'failed')
-                    <div class="stat-mini" style="color:var(--danger)">Last audit failed: {{ $latestAudit->error_message }}</div>
                 @else
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        @foreach([
-                            ['Performance',$latestAudit->performance_score],
-                            ['Accessibility',$latestAudit->accessibility_score],
-                            ['Best Practices',$latestAudit->best_practices_score],
-                            ['SEO',$latestAudit->seo_score],
-                        ] as [$auditLabel,$auditScore])
-                            <div class="metric-card text-center" style="min-width:110px">
-                                <div class="metric-label">{{ $auditLabel }}</div>
-                                <div class="mt-1"><span class="badge-soft {{ $latestAudit->badgeClass($auditScore) }}">{{ $auditScore ?? '—' }}</span></div>
+                    <div class="row g-3">
+                        @foreach(['Mobile' => $latestMobileAudit, 'Desktop' => $latestDesktopAudit] as $deviceLabel => $audit)
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="fw-semibold mb-2" style="font-size:12.5px">{{ $deviceLabel }}</div>
+                                    @if(!$audit)
+                                        <div class="stat-mini">Not run yet.</div>
+                                    @elseif($audit->status === 'failed')
+                                        <div class="stat-mini" style="color:var(--danger)">Failed: {{ $audit->error_message }}</div>
+                                    @else
+                                        <div class="d-flex flex-wrap gap-2 mb-3">
+                                            @foreach([
+                                                ['Performance',$audit->performance_score],
+                                                ['Accessibility',$audit->accessibility_score],
+                                                ['Best Practices',$audit->best_practices_score],
+                                                ['SEO',$audit->seo_score],
+                                            ] as [$auditLabel,$auditScore])
+                                                <div class="metric-card text-center" style="min-width:90px">
+                                                    <div class="metric-label">{{ $auditLabel }}</div>
+                                                    <div class="mt-1"><span class="badge-soft {{ $audit->badgeClass($auditScore) }}">{{ $auditScore ?? '—' }}</span></div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-3 mb-2">
+                                            @foreach([
+                                                ['LCP',$audit->lcp_ms !== null ? number_format($audit->lcp_ms / 1000, 1).'s' : '—'],
+                                                ['FCP',$audit->fcp_ms !== null ? number_format($audit->fcp_ms / 1000, 1).'s' : '—'],
+                                                ['CLS',$audit->cls ?? '—'],
+                                                ['TBT',$audit->tbt_ms !== null ? $audit->tbt_ms.'ms' : '—'],
+                                                ['Speed Index',$audit->speed_index_ms !== null ? number_format($audit->speed_index_ms / 1000, 1).'s' : '—'],
+                                            ] as [$vitalLabel,$vitalValue])
+                                                <div class="text-center" style="min-width:58px">
+                                                    <div class="stat-mini">{{ $vitalLabel }}</div>
+                                                    <div style="font-size:12px;font-weight:650">{{ $vitalValue }}</div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        @if($audit->screenshot)
+                                            <img src="{{ $audit->screenshot }}" alt="{{ $deviceLabel }} screenshot" class="preview-cover mb-2" style="width:auto;height:auto;max-width:100%;max-height:none">
+                                        @endif
+                                        <div class="stat-mini">{{ $audit->created_at->format('d M Y, h:i A') }}</div>
+                                    @endif
+                                </div>
                             </div>
                         @endforeach
                     </div>
-                    <div class="d-flex flex-wrap gap-3 mb-3">
-                        @foreach([
-                            ['LCP',$latestAudit->lcp_ms !== null ? number_format($latestAudit->lcp_ms / 1000, 1).'s' : '—'],
-                            ['FCP',$latestAudit->fcp_ms !== null ? number_format($latestAudit->fcp_ms / 1000, 1).'s' : '—'],
-                            ['CLS',$latestAudit->cls ?? '—'],
-                            ['TBT',$latestAudit->tbt_ms !== null ? $latestAudit->tbt_ms.'ms' : '—'],
-                            ['Speed Index',$latestAudit->speed_index_ms !== null ? number_format($latestAudit->speed_index_ms / 1000, 1).'s' : '—'],
-                        ] as [$vitalLabel,$vitalValue])
-                            <div class="text-center" style="min-width:74px">
-                                <div class="stat-mini">{{ $vitalLabel }}</div>
-                                <div style="font-size:13px;font-weight:650">{{ $vitalValue }}</div>
-                            </div>
-                        @endforeach
-                    </div>
-                    @if($latestAudit->screenshot)
-                        <img src="{{ $latestAudit->screenshot }}" alt="{{ $prospect->business_name }} screenshot" class="preview-cover mb-2" style="width:auto;height:auto;max-width:240px;max-height:none">
-                    @endif
-                    <div class="stat-mini">Audited {{ $latestAudit->created_at->format('d M Y, h:i A') }} · {{ ucfirst($latestAudit->strategy) }} · {{ $latestAudit->url }}</div>
                 @endif
             </div>
         </div>

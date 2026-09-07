@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\Prospect\ProspectRequest;
 use App\Models\SmartLink\IntentScore;
 use App\Models\SmartLink\Prospect;
 use App\Models\SmartLink\SalesActivity;
+use App\Models\SmartLink\SmartPage;
 use App\Models\SmartLink\SmartPageTemplate;
 use App\Models\User;
 use App\Services\Common\AccessService;
@@ -128,11 +129,12 @@ class ProspectController extends Controller
             'visits' => $prospect->visits()->latest('started_at')->limit(100)->get(),
             'activities' => $prospect->salesActivities()->with('user')->latest()->get(),
             'scoreService' => $this->intentScore,
-            'latestAudit' => $prospect->latestWebsiteAudit,
+            'latestMobileAudit' => $prospect->latestMobileAudit,
+            'latestDesktopAudit' => $prospect->latestDesktopAudit,
         ]);
     }
 
-    /** Runs a Google PageSpeed Insights audit for the prospect's website (PDF section 13). */
+    /** Runs a Google PageSpeed Insights audit (mobile + desktop) for the prospect's website (PDF section 13). */
     public function runAudit(Prospect $prospect)
     {
         $this->authorize('update', $prospect);
@@ -141,20 +143,22 @@ class ProspectController extends Controller
             return back()->withErrors(['audit' => 'Add a website URL to this prospect before running an audit.']);
         }
 
-        try {
-            $data = $this->pageSpeed->audit($prospect->website);
+        $results = $this->pageSpeed->auditBoth($prospect->website);
+        $failures = [];
+
+        foreach ($results as $strategy => $data) {
             $prospect->websiteAudits()->create($data + ['url' => $prospect->website]);
 
-            return back()->with('success', 'Website audit completed.');
-        } catch (Throwable $e) {
-            $prospect->websiteAudits()->create([
-                'url' => $prospect->website,
-                'status' => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
-
-            return back()->withErrors(['audit' => 'Audit failed: '.$e->getMessage()]);
+            if ($data['status'] === 'failed') {
+                $failures[] = ucfirst($strategy).' — '.$data['error_message'];
+            }
         }
+
+        if ($failures) {
+            return back()->withErrors(['audit' => 'Audit finished with errors: '.implode(' | ', $failures)]);
+        }
+
+        return back()->with('success', 'Website audit completed (mobile + desktop).');
     }
 
     public function edit(Prospect $prospect)
@@ -173,6 +177,8 @@ class ProspectController extends Controller
         $this->authorize('update', $prospect);
 
         $data = $request->validated();
+        $oldPhone = $prospect->phone;
+
         $prospect->update([
             'business_name' => $data['business_name'],
             'contact_name' => $data['contact_name'] ?? null,
@@ -192,9 +198,30 @@ class ProspectController extends Controller
                 $page->update(['template_id' => $data['template_id']]);
                 $this->smartLinks->applyTemplate($page, SmartPageTemplate::findOrFail($data['template_id']));
             }
+
+            $this->resyncWhatsAppCta($page, $oldPhone, $prospect->phone);
         }
 
         return redirect()->route('admin.prospects.show', $prospect)->with('success', 'Prospect updated.');
+    }
+
+    /**
+     * The WhatsApp CTA link is derived from the prospect's phone number when the Smart
+     * Page is created, but a salesperson can also hand-edit it in the page editor. Only
+     * refresh it here when it still matches what the old phone number auto-generated,
+     * so a manually customized link is never silently overwritten.
+     */
+    private function resyncWhatsAppCta(SmartPage $page, ?string $oldPhone, ?string $newPhone): void
+    {
+        if ($page->cta_type !== 'whatsapp' || $newPhone === $oldPhone) {
+            return;
+        }
+
+        $autoUrl = fn (?string $phone) => $phone ? 'https://wa.me/'.preg_replace('/\D+/', '', $phone) : null;
+
+        if ($page->cta_url === $autoUrl($oldPhone)) {
+            $page->update(['cta_url' => $autoUrl($newPhone)]);
+        }
     }
 
     public function destroy(Prospect $prospect)

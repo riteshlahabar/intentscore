@@ -100,6 +100,7 @@
                     @endforeach
                 </div>
                 @if($section->content)<div class="custom-copy mt-3">{{ $section->content }}</div>@endif
+                @if($type === 'website_audit')@include('frontend.smart-page.partials.pagespeed-audit')@endif
 
             @elseif($type === 'google_audit')
                 <div class="section-head"><div class="eyebrow">Audit</div><h2>{{ $title }}</h2></div>

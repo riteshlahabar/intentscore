@@ -60,8 +60,13 @@ class Prospect extends Model
         return $this->hasMany(WebsiteAudit::class, 'prospect_id');
     }
 
-    public function latestWebsiteAudit(): HasOne
+    public function latestMobileAudit(): HasOne
     {
-        return $this->hasOne(WebsiteAudit::class, 'prospect_id')->latestOfMany();
+        return $this->hasOne(WebsiteAudit::class, 'prospect_id')->where('strategy', 'mobile')->latestOfMany();
+    }
+
+    public function latestDesktopAudit(): HasOne
+    {
+        return $this->hasOne(WebsiteAudit::class, 'prospect_id')->where('strategy', 'desktop')->latestOfMany();
     }
 }
