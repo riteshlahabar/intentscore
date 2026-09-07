@@ -65,4 +65,14 @@ class Prospect extends Model
     {
         return $this->websiteAudits()->where('strategy', $strategy)->latest('id')->first();
     }
+
+    public function instagramAudits(): HasMany
+    {
+        return $this->hasMany(InstagramAudit::class, 'prospect_id');
+    }
+
+    public function latestInstagramAudit(): ?InstagramAudit
+    {
+        return $this->instagramAudits()->latest('id')->first();
+    }
 }

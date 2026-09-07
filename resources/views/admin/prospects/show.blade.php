@@ -188,6 +188,117 @@
         </div>
 
         <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Instagram Audit</strong>
+                <form method="post" action="{{ route('admin.prospects.instagram',$prospect) }}" class="toolbar-actions" data-instagram-form>@csrf
+                    <input type="text" name="instagram" class="form-control form-control-sm" style="width:230px"
+                           placeholder="instagram.com/username" value="{{ old('instagram', $latestInstagramAudit?->username) }}">
+                    <button class="btn btn-primary btn-sm"><i class="ri-instagram-line me-1"></i>Fetch Profile</button>
+                </form>
+            </div>
+            <div class="card-body">
+                <div id="instagram-progress" class="mb-3" hidden>
+                    <div class="progress" style="height:6px">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width:100%"></div>
+                    </div>
+                    <div class="stat-mini mt-1">Reading the public Instagram profile…</div>
+                </div>
+                @if(!$latestInstagramAudit)
+                    <div class="empty-state"><i class="ri-instagram-line"></i><div class="mt-2">Paste the prospect's Instagram profile link above to pull their public profile.</div></div>
+                @elseif($latestInstagramAudit->status === 'failed')
+                    <div class="psi-error">
+                        <i class="ri-error-warning-line me-1"></i>Could not read this Instagram profile
+                        <div class="mt-1">{{ $latestInstagramAudit->error_message }}</div>
+                    </div>
+                    <div class="stat-mini mt-2">Attempted {{ $latestInstagramAudit->created_at->format('d M Y, h:i A') }}</div>
+                @else
+                    @php($ig = $latestInstagramAudit)
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <div class="psi-col h-100">
+                                <div class="ig-head">
+                                    @if($ig->profile_pic)
+                                        <img src="{{ $ig->profile_pic }}" alt="{{ $ig->username }}" class="ig-avatar">
+                                    @else
+                                        <div class="ig-avatar ig-avatar-blank"><i class="ri-user-line"></i></div>
+                                    @endif
+                                    <div>
+                                        <div class="ig-handle">
+                                            {{ $ig->username }}
+                                            @if($ig->is_verified)<i class="ri-verified-badge-fill text-primary"></i>@endif
+                                        </div>
+                                        @if($ig->full_name)<div class="ig-name">{{ $ig->full_name }}</div>@endif
+                                    </div>
+                                </div>
+                                <div class="ig-counts">
+                                    @foreach([
+                                        ['posts', $ig->posts_count],
+                                        ['followers', $ig->followers],
+                                        ['following', $ig->following],
+                                    ] as [$igLabel,$igCount])
+                                        <div><strong>{{ $igCount !== null ? number_format($igCount) : '—' }}</strong> {{ $igLabel }}</div>
+                                    @endforeach
+                                </div>
+                                @if($ig->category)<div class="stat-mini mt-2">{{ $ig->category }}</div>@endif
+                                @if($ig->biography)<div class="ig-bio">{{ $ig->biography }}</div>@endif
+                                @if($ig->business_address)<div class="stat-mini mt-2"><i class="ri-map-pin-line me-1"></i>{{ $ig->business_address }}</div>@endif
+                                @if($ig->external_url)
+                                    <div class="mt-2"><a href="{{ $ig->external_url }}" target="_blank" rel="noopener" class="text-brand" style="font-size:12px;word-break:break-all"><i class="ri-links-line me-1"></i>{{ $ig->external_url }}</a></div>
+                                @endif
+                                <div class="stat-mini psi-audited mt-3">
+                                    <a href="{{ $ig->profile_url }}" target="_blank" rel="noopener" class="text-brand">Open profile</a>
+                                    · Fetched {{ $ig->created_at->format('d M Y, h:i A') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="psi-col h-100">
+                                <div class="psi-col-head">Audit score · {{ $ig->overallScore() ?? '—' }}/100</div>
+                                <div class="psi-gauges">
+                                    @foreach([
+                                        ['Profile',$ig->profile_score],
+                                        ['Audience',$ig->audience_score],
+                                        ['Engagement',$ig->engagement_score],
+                                        ['Consistency',$ig->consistency_score],
+                                    ] as [$igScoreLabel,$igScore])
+                                        @php($igTier = $igScore === null ? 'na' : ($igScore >= 90 ? 'good' : ($igScore >= 50 ? 'ok' : 'poor')))
+                                        @php($igColor = ['good'=>'#0cce6b','ok'=>'#ffa400','poor'=>'#ff4e42','na'=>'#c7ccd1'][$igTier])
+                                        <div class="psi-gauge-wrap">
+                                            <div class="psi-gauge" style="--psi-s:{{ $igScore ?? 0 }};--psi-c:{{ $igColor }}">
+                                                <div class="psi-gauge-hole">{{ $igScore ?? '—' }}</div>
+                                            </div>
+                                            <div class="psi-gauge-label">{{ $igScoreLabel }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="psi-vitals">
+                                    @foreach([
+                                        ['Engagement rate',$ig->engagement_rate !== null ? number_format($ig->engagement_rate, 2).'%' : '—'],
+                                        ['Avg likes',$ig->avg_likes !== null ? number_format($ig->avg_likes) : '—'],
+                                        ['Avg comments',$ig->avg_comments !== null ? number_format($ig->avg_comments) : '—'],
+                                        ['Follower/following',$ig->follow_ratio !== null ? number_format($ig->follow_ratio, 2).'x' : '—'],
+                                        ['Posts / month',$ig->posts_per_month !== null ? number_format($ig->posts_per_month, 1) : '—'],
+                                        ['Last post',$ig->days_since_last_post !== null ? $ig->days_since_last_post.'d ago' : '—'],
+                                    ] as [$igVitalLabel,$igVitalValue])
+                                        <div>
+                                            <div class="stat-mini">{{ $igVitalLabel }}</div>
+                                            <div style="font-size:12px;font-weight:650">{{ $igVitalValue }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @if($ig->is_private)
+                                    <div class="stat-mini mt-3"><span class="badge-soft soft-amber">Private account</span> Post data is hidden, so engagement and consistency cannot be measured.</div>
+                                @elseif(!$ig->is_business)
+                                    <div class="stat-mini mt-3"><span class="badge-soft soft-gray">Personal account</span> No business category or address is published on personal profiles.</div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="card mb-3">
             <div class="card-header d-flex justify-content-between">
                 <strong>Activity timeline</strong>
                 <span class="text-muted" style="font-size:11px">{{ $timeline->count() }} events</span>

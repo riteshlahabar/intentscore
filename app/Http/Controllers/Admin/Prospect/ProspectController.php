@@ -11,6 +11,7 @@ use App\Models\SmartLink\SmartPage;
 use App\Models\SmartLink\SmartPageTemplate;
 use App\Models\User;
 use App\Services\Common\AccessService;
+use App\Services\SmartLink\InstagramProfileService;
 use App\Services\SmartLink\IntentScoreService;
 use App\Services\SmartLink\PageSpeedInsightsService;
 use App\Services\SmartLink\SmartLinkService;
@@ -25,6 +26,7 @@ class ProspectController extends Controller
         private IntentScoreService $intentScore,
         private AccessService $access,
         private PageSpeedInsightsService $pageSpeed,
+        private InstagramProfileService $instagram,
     ) {
     }
 
@@ -131,6 +133,7 @@ class ProspectController extends Controller
             'scoreService' => $this->intentScore,
             'latestMobileAudit' => $prospect->latestAuditFor('mobile'),
             'latestDesktopAudit' => $prospect->latestAuditFor('desktop'),
+            'latestInstagramAudit' => $prospect->latestInstagramAudit(),
         ]);
     }
 
@@ -165,6 +168,29 @@ class ProspectController extends Controller
         }
 
         return back()->with('success', ucfirst($strategy).' audit completed.');
+    }
+
+    /**
+     * Reads a prospect's public Instagram profile from a pasted link. The handle is not
+     * stored on the prospect: the audit row keeps it, so the field prefills from the last
+     * run and a rep can point the audit at a different account without editing the record.
+     */
+    public function runInstagramAudit(Request $request, Prospect $prospect)
+    {
+        $this->authorize('update', $prospect);
+
+        $link = $request->validate([
+            'instagram' => ['required', 'string', 'max:255'],
+        ])['instagram'];
+
+        $data = $this->instagram->audit($link);
+        $prospect->instagramAudits()->create($data);
+
+        if ($data['status'] === 'failed') {
+            return back()->withErrors(['instagram' => 'Instagram audit failed: '.$data['error_message']]);
+        }
+
+        return back()->with('success', 'Instagram audit completed for @'.$data['username'].'.');
     }
 
     public function edit(Prospect $prospect)

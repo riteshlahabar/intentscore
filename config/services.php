@@ -39,4 +39,16 @@ return [
         'key' => env('PAGESPEED_API_KEY'),
     ],
 
+    /*
+     * Which ProfileSource reads a prospect's public Instagram profile. "web" needs no
+     * key but Instagram now answers it with a login wall, so a paid provider has to be
+     * registered here and selected with INSTAGRAM_SOURCE before the feature returns data.
+     */
+    'instagram' => [
+        'source' => env('INSTAGRAM_SOURCE', 'web'),
+        'sources' => [
+            'web' => App\Services\SmartLink\Instagram\WebProfileSource::class,
+        ],
+    ],
+
 ];
