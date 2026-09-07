@@ -122,7 +122,7 @@ class ProspectController extends Controller
         return view('admin.prospects.show', [
             'prospect' => $prospect,
             'timeline' => $prospect->events()->latest('occurred_at')->limit(200)->get(),
-            'visits' => $prospect->visits()->latest('started_at')->limit(20)->get(),
+            'visits' => $prospect->visits()->latest('started_at')->limit(100)->get(),
             'activities' => $prospect->salesActivities()->with('user')->latest()->get(),
             'scoreService' => $this->intentScore,
         ]);

@@ -82,20 +82,22 @@
         <div class="card">
             <div class="card-header"><strong>Visits</strong></div>
             <div class="card-body">
-                @forelse($visits as $v)
-                    <div class="d-flex justify-content-between gap-2 py-2 border-bottom">
-                        <div>
-                            <div style="font-size:12.5px">{{ $v->started_at?->format('d M Y, h:i A') }}</div>
-                            <div class="stat-mini">{{ collect([$v->device_type,$v->browser,$v->operating_system])->filter()->join(' · ') }}</div>
+                <div class="timeline-scroll">
+                    @forelse($visits as $v)
+                        <div class="d-flex justify-content-between gap-2 py-2 border-bottom">
+                            <div>
+                                <div style="font-size:12.5px">{{ $v->started_at?->format('d M Y, h:i A') }}</div>
+                                <div class="stat-mini">{{ collect([$v->device_type,$v->browser,$v->operating_system])->filter()->join(' · ') }}</div>
+                            </div>
+                            <div class="text-end">
+                                @if($v->is_return_visit)<span class="badge-soft soft-amber">Return</span>@endif
+                                <div class="stat-mini mt-1">{{ $v->active_seconds }}s</div>
+                            </div>
                         </div>
-                        <div class="text-end">
-                            @if($v->is_return_visit)<span class="badge-soft soft-amber">Return</span>@endif
-                            <div class="stat-mini mt-1">{{ $v->active_seconds }}s</div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="stat-mini">No visits recorded yet.</div>
-                @endforelse
+                    @empty
+                        <div class="stat-mini">No visits recorded yet.</div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
