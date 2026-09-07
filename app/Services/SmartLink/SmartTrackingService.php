@@ -24,7 +24,7 @@ class SmartTrackingService
 
     /** Events that change the score and therefore trigger a recalculation. */
     private const SCORING = [
-        'page_opened', 'section_viewed', 'calculator_completed',
+        'page_opened', 'section_viewed', 'section_clicked', 'calculator_completed',
         'cta_clicked', 'contact_clicked', 'whatsapp_clicked', 'calendar_clicked', 'email_clicked',
     ];
 

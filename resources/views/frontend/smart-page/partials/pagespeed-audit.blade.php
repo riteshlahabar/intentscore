@@ -6,7 +6,7 @@
 @endphp
 @if($psiCards->isNotEmpty())
     <style>
-        .psi-audit{margin-top:24px;max-width:900px;margin-left:auto;margin-right:auto;text-align:left;border:1px solid #e7ecea;border-radius:12px;overflow:hidden;background:#fff}
+        .psi-audit{margin-top:24px;max-width:720px;margin-left:auto;margin-right:auto;text-align:left;border:1px solid #e7ecea;border-radius:12px;overflow:hidden;background:#fff}
         .psi-tabs{display:flex;gap:4px;border-bottom:1px solid #e7ecea;padding:10px 14px 0}
         .psi-tabs label{padding:9px 14px;font-size:12.5px;font-weight:700;color:#67727e;cursor:pointer;border-bottom:2px solid transparent;user-select:none}
         .psi-panels{padding:20px}
@@ -32,8 +32,8 @@
     <div class="psi-audit">
         @if($psiCards->count() > 1)
             <div class="psi-tabs">
-                <label for="{{ $psiUid }}-mobile">Mobile</label>
-                <label for="{{ $psiUid }}-desktop">Desktop</label>
+                <label for="{{ $psiUid }}-mobile" data-track="section_clicked" data-section="website_audit" data-label="Website audit: Mobile">Mobile</label>
+                <label for="{{ $psiUid }}-desktop" data-track="section_clicked" data-section="website_audit" data-label="Website audit: Desktop">Desktop</label>
             </div>
         @endif
         <div class="psi-panels">

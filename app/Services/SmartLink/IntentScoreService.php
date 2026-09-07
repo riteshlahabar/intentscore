@@ -36,6 +36,8 @@ class IntentScoreService
             'return_visit' => $events->where('event_type', 'return_visit')->count(),
             'section_viewed' => $events->where('event_type', 'section_viewed')
                 ->pluck('section_type')->filter()->unique()->count(),
+            'section_clicked' => $events->where('event_type', 'section_clicked')
+                ->pluck('section_type')->filter()->unique()->count(),
             'portfolio_viewed' => $events->where('event_type', 'section_viewed')
                 ->where('section_type', 'portfolio')->count() > 0 ? 1 : 0,
             'solution_viewed' => $events->where('event_type', 'section_viewed')
