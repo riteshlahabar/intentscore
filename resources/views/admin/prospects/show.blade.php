@@ -107,7 +107,7 @@
                 <span class="text-muted" style="font-size:11px">{{ $timeline->count() }} events</span>
             </div>
             <div class="card-body">
-                <div class="timeline">
+                <div class="timeline timeline-scroll">
                     @forelse($timeline as $e)
                         @php($points = $scoreService->pointsFor($e))
                         <div class="timeline-item">

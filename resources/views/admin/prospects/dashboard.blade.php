@@ -77,7 +77,7 @@
         <div class="card h-100">
             <div class="card-header"><strong>Recent activity</strong></div>
             <div class="card-body">
-                <div class="timeline">
+                <div class="timeline timeline-scroll">
                     @forelse($recent as $e)
                         <div class="timeline-item">
                             <div class="timeline-time">{{ $e->occurred_at?->format('d M Y, h:i A') }}</div>
