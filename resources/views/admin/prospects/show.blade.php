@@ -106,11 +106,17 @@
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <strong>Website Audit</strong>
-                <form method="post" action="{{ route('admin.prospects.audit',$prospect) }}">@csrf
-                    <button class="btn btn-primary btn-sm" @if(!$prospect->website) disabled @endif><i class="ri-speed-up-line me-1"></i>Run audit</button>
+                <form method="post" action="{{ route('admin.prospects.audit',$prospect) }}" id="audit-form">@csrf
+                    <button class="btn btn-primary btn-sm" id="audit-run-btn" @if(!$prospect->website) disabled @endif><i class="ri-speed-up-line me-1"></i>Run audit</button>
                 </form>
             </div>
             <div class="card-body">
+                <div id="audit-progress" class="mb-3" hidden>
+                    <div class="progress" style="height:6px">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width:100%"></div>
+                    </div>
+                    <div class="stat-mini mt-1">Running PageSpeed audit for mobile and desktop — this can take up to a minute…</div>
+                </div>
                 @if(!$prospect->website)
                     <div class="empty-state"><i class="ri-global-line"></i><div class="mt-2">Add a website URL to this prospect to run a PageSpeed audit.</div></div>
                 @elseif(!$latestMobileAudit && !$latestDesktopAudit)
