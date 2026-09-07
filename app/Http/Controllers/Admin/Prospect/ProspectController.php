@@ -11,9 +11,11 @@ use App\Models\SmartLink\SmartPageTemplate;
 use App\Models\User;
 use App\Services\Common\AccessService;
 use App\Services\SmartLink\IntentScoreService;
+use App\Services\SmartLink\PageSpeedInsightsService;
 use App\Services\SmartLink\SmartLinkService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Throwable;
 
 class ProspectController extends Controller
 {
@@ -21,6 +23,7 @@ class ProspectController extends Controller
         private SmartLinkService $smartLinks,
         private IntentScoreService $intentScore,
         private AccessService $access,
+        private PageSpeedInsightsService $pageSpeed,
     ) {
     }
 
@@ -125,7 +128,33 @@ class ProspectController extends Controller
             'visits' => $prospect->visits()->latest('started_at')->limit(100)->get(),
             'activities' => $prospect->salesActivities()->with('user')->latest()->get(),
             'scoreService' => $this->intentScore,
+            'latestAudit' => $prospect->latestWebsiteAudit,
         ]);
+    }
+
+    /** Runs a Google PageSpeed Insights audit for the prospect's website (PDF section 13). */
+    public function runAudit(Prospect $prospect)
+    {
+        $this->authorize('update', $prospect);
+
+        if (! $prospect->website) {
+            return back()->withErrors(['audit' => 'Add a website URL to this prospect before running an audit.']);
+        }
+
+        try {
+            $data = $this->pageSpeed->audit($prospect->website);
+            $prospect->websiteAudits()->create($data + ['url' => $prospect->website]);
+
+            return back()->with('success', 'Website audit completed.');
+        } catch (Throwable $e) {
+            $prospect->websiteAudits()->create([
+                'url' => $prospect->website,
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['audit' => 'Audit failed: '.$e->getMessage()]);
+        }
     }
 
     public function edit(Prospect $prospect)

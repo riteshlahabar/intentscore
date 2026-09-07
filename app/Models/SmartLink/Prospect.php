@@ -54,4 +54,14 @@ class Prospect extends Model
     {
         return $this->hasMany(SalesActivity::class, 'prospect_id');
     }
+
+    public function websiteAudits(): HasMany
+    {
+        return $this->hasMany(WebsiteAudit::class, 'prospect_id');
+    }
+
+    public function latestWebsiteAudit(): HasOne
+    {
+        return $this->hasOne(WebsiteAudit::class, 'prospect_id')->latestOfMany();
+    }
 }

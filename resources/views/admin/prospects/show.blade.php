@@ -104,6 +104,56 @@
 
     <div class="col-xl-8">
         <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Website Audit</strong>
+                <form method="post" action="{{ route('admin.prospects.audit',$prospect) }}">@csrf
+                    <button class="btn btn-primary btn-sm" @if(!$prospect->website) disabled @endif><i class="ri-speed-up-line me-1"></i>Run audit</button>
+                </form>
+            </div>
+            <div class="card-body">
+                @if(!$prospect->website)
+                    <div class="empty-state"><i class="ri-global-line"></i><div class="mt-2">Add a website URL to this prospect to run a PageSpeed audit.</div></div>
+                @elseif(!$latestAudit)
+                    <div class="empty-state"><i class="ri-speed-up-line"></i><div class="mt-2">No audit run yet for {{ $prospect->website }}.</div></div>
+                @elseif($latestAudit->status === 'failed')
+                    <div class="stat-mini" style="color:var(--danger)">Last audit failed: {{ $latestAudit->error_message }}</div>
+                @else
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        @foreach([
+                            ['Performance',$latestAudit->performance_score],
+                            ['Accessibility',$latestAudit->accessibility_score],
+                            ['Best Practices',$latestAudit->best_practices_score],
+                            ['SEO',$latestAudit->seo_score],
+                        ] as [$auditLabel,$auditScore])
+                            <div class="metric-card text-center" style="min-width:110px">
+                                <div class="metric-label">{{ $auditLabel }}</div>
+                                <div class="mt-1"><span class="badge-soft {{ $latestAudit->badgeClass($auditScore) }}">{{ $auditScore ?? '—' }}</span></div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="d-flex flex-wrap gap-3 mb-3">
+                        @foreach([
+                            ['LCP',$latestAudit->lcp_ms !== null ? number_format($latestAudit->lcp_ms / 1000, 1).'s' : '—'],
+                            ['FCP',$latestAudit->fcp_ms !== null ? number_format($latestAudit->fcp_ms / 1000, 1).'s' : '—'],
+                            ['CLS',$latestAudit->cls ?? '—'],
+                            ['TBT',$latestAudit->tbt_ms !== null ? $latestAudit->tbt_ms.'ms' : '—'],
+                            ['Speed Index',$latestAudit->speed_index_ms !== null ? number_format($latestAudit->speed_index_ms / 1000, 1).'s' : '—'],
+                        ] as [$vitalLabel,$vitalValue])
+                            <div class="text-center" style="min-width:74px">
+                                <div class="stat-mini">{{ $vitalLabel }}</div>
+                                <div style="font-size:13px;font-weight:650">{{ $vitalValue }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                    @if($latestAudit->screenshot)
+                        <img src="{{ $latestAudit->screenshot }}" alt="{{ $prospect->business_name }} screenshot" class="preview-cover mb-2" style="width:auto;height:auto;max-width:240px;max-height:none">
+                    @endif
+                    <div class="stat-mini">Audited {{ $latestAudit->created_at->format('d M Y, h:i A') }} · {{ ucfirst($latestAudit->strategy) }} · {{ $latestAudit->url }}</div>
+                @endif
+            </div>
+        </div>
+
+        <div class="card mb-3">
             <div class="card-header d-flex justify-content-between">
                 <strong>Activity timeline</strong>
                 <span class="text-muted" style="font-size:11px">{{ $timeline->count() }} events</span>

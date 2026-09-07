@@ -42,6 +42,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,salesper
     Route::delete('prospects/{prospect}', [ProspectController::class, 'destroy'])->name('prospects.destroy');
     Route::put('prospects/{prospect}/status', [ProspectController::class, 'updateStatus'])->name('prospects.status');
     Route::post('prospects/{prospect}/regenerate-link', [ProspectController::class, 'regenerateLink'])->name('prospects.regenerate');
+    Route::post('prospects/{prospect}/audit', [ProspectController::class, 'runAudit'])->name('prospects.audit');
 
     Route::get('prospects/{prospect}/page', [SmartPageController::class, 'edit'])->name('prospects.page.edit');
     Route::put('prospects/{prospect}/page', [SmartPageController::class, 'update'])->name('prospects.page.update');
