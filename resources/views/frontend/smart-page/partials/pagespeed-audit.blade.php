@@ -6,7 +6,7 @@
 @endphp
 @if($psiCards->isNotEmpty())
     <style>
-        .psi-audit{margin-top:24px;text-align:left;border:1px solid #e7ecea;border-radius:12px;overflow:hidden;background:#fff}
+        .psi-audit{margin-top:24px;max-width:900px;margin-left:auto;margin-right:auto;text-align:left;border:1px solid #e7ecea;border-radius:12px;overflow:hidden;background:#fff}
         .psi-tabs{display:flex;gap:4px;border-bottom:1px solid #e7ecea;padding:10px 14px 0}
         .psi-tabs label{padding:9px 14px;font-size:12.5px;font-weight:700;color:#67727e;cursor:pointer;border-bottom:2px solid transparent;user-select:none}
         .psi-panels{padding:20px}
@@ -17,6 +17,7 @@
         .psi-gauge-wrap{text-align:center}
         .psi-gauge-label{font-size:10px;color:#67727e;margin-top:7px;font-weight:650}
         .psi-shot{width:190px;max-width:100%;border-radius:8px;border:1px solid #e7ecea;display:block}
+        .psi-panel-mobile .psi-shot{width:auto;height:auto;max-height:150px;margin:0 auto}
         .psi-vitals{display:flex;flex-wrap:wrap;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid #f1f3f4}
         .psi-vital-label{font-size:10px;color:#67727e}
         .psi-vital-value{font-size:12.5px;font-weight:700;margin-top:2px}
@@ -24,7 +25,7 @@
         #{{ $psiUid }}-desktop:checked ~ .psi-audit .psi-panel-desktop{display:grid}
         #{{ $psiUid }}-mobile:checked ~ .psi-audit .psi-tabs label[for="{{ $psiUid }}-mobile"],
         #{{ $psiUid }}-desktop:checked ~ .psi-audit .psi-tabs label[for="{{ $psiUid }}-desktop"]{color:#ee7b1d;border-color:#ee7b1d}
-        @media(max-width:520px){.psi-panel{grid-template-columns:1fr}.psi-shot{width:100%}}
+        @media(max-width:520px){.psi-panel{grid-template-columns:1fr}.psi-shot{width:100%}.psi-panel-mobile .psi-shot{width:auto;max-height:220px}}
     </style>
     @if($psiCards->has('mobile'))<input type="radio" name="{{ $psiUid }}" id="{{ $psiUid }}-mobile" hidden checked>@endif
     @if($psiCards->has('desktop'))<input type="radio" name="{{ $psiUid }}" id="{{ $psiUid }}-desktop" hidden {{ !$psiCards->has('mobile') ? 'checked' : '' }}>@endif

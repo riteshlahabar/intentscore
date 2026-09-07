@@ -177,7 +177,7 @@
                                         @if($audit->screenshot)
                                             <img src="{{ $audit->screenshot }}" alt="{{ ucfirst($strategy) }} screenshot" class="psi-shot {{ $strategy === 'mobile' ? 'psi-shot-mobile' : '' }} mt-3">
                                         @endif
-                                        <div class="stat-mini mt-2">Audited {{ $audit->created_at->format('d M Y, h:i A') }}</div>
+                                        <div class="stat-mini psi-audited mt-2">Audited {{ $audit->created_at->format('d M Y, h:i A') }}</div>
                                     @endif
                                 </div>
                             </div>
