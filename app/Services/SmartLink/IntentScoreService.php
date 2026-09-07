@@ -36,8 +36,9 @@ class IntentScoreService
             'return_visit' => $events->where('event_type', 'return_visit')->count(),
             'section_viewed' => $events->where('event_type', 'section_viewed')
                 ->pluck('section_type')->filter()->unique()->count(),
-            'section_clicked' => $events->where('event_type', 'section_clicked')
-                ->pluck('section_type')->filter()->unique()->count(),
+            // Every click counts: repeatedly opening the audit tabs is real interest.
+            // The rule's max_times keeps a visitor toggling tabs from inflating the score.
+            'section_clicked' => $events->where('event_type', 'section_clicked')->count(),
             'portfolio_viewed' => $events->where('event_type', 'section_viewed')
                 ->where('section_type', 'portfolio')->count() > 0 ? 1 : 0,
             'solution_viewed' => $events->where('event_type', 'section_viewed')

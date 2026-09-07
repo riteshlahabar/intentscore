@@ -32,8 +32,8 @@
     <div class="psi-audit">
         @if($psiCards->count() > 1)
             <div class="psi-tabs">
-                <label for="{{ $psiUid }}-mobile" data-track="section_clicked" data-section="website_audit" data-label="Website audit: Mobile">Mobile</label>
-                <label for="{{ $psiUid }}-desktop" data-track="section_clicked" data-section="website_audit" data-label="Website audit: Desktop">Desktop</label>
+                <label for="{{ $psiUid }}-mobile" data-track="section_clicked" data-section="website_audit" data-label="Mobile Website Audit">Mobile</label>
+                <label for="{{ $psiUid }}-desktop" data-track="section_clicked" data-section="website_audit" data-label="Desktop Website Audit">Desktop</label>
             </div>
         @endif
         <div class="psi-panels">

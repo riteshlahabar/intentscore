@@ -44,7 +44,11 @@ class SmartEvent extends Model
         $base = self::LABELS[$this->event_type] ?? ucwords(str_replace('_', ' ', $this->event_type));
 
         if ($this->section_type && in_array($this->event_type, ['section_viewed', 'section_clicked'], true)) {
-            return $base.': '.SmartPageTemplate::sectionLabel($this->section_type);
+            // A section can hold more than one clickable view — the Website Audit has a
+            // Mobile and a Desktop tab — so a click names the exact one it opened.
+            $clicked = $this->event_type === 'section_clicked' ? ($this->metadata['label'] ?? null) : null;
+
+            return $base.': '.($clicked ?: SmartPageTemplate::sectionLabel($this->section_type));
         }
 
         if ($this->event_type === 'time_spent' && $this->duration_ms) {

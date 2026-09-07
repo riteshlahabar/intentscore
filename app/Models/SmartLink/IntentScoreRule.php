@@ -18,7 +18,7 @@ class IntentScoreRule extends Model
         ['event_key' => 'page_opened', 'label' => 'Page opened', 'points' => 2, 'max_times' => 1],
         ['event_key' => 'return_visit', 'label' => 'Return visit', 'points' => 5, 'max_times' => 4],
         ['event_key' => 'section_viewed', 'label' => 'Section viewed', 'points' => 1, 'max_times' => 8],
-        ['event_key' => 'section_clicked', 'label' => 'Section expanded', 'points' => 3, 'max_times' => 3],
+        ['event_key' => 'section_clicked', 'label' => 'Section expanded', 'points' => 2, 'max_times' => 5],
         ['event_key' => 'portfolio_viewed', 'label' => 'Portfolio viewed', 'points' => 3, 'max_times' => 1],
         ['event_key' => 'calculator_completed', 'label' => 'Calculator completed', 'points' => 8, 'max_times' => 3],
         ['event_key' => 'solution_viewed', 'label' => 'Recommended Solution viewed', 'points' => 5, 'max_times' => 1],
