@@ -16,8 +16,9 @@ class PageSpeedInsightsService
     public const STRATEGIES = ['mobile', 'desktop'];
 
     /**
-     * Runs a mobile and a desktop audit in parallel (one waits on the other otherwise,
-     * and PSI can each take 20-40s).
+     * Runs a mobile and a desktop audit in parallel (one waits on the other otherwise).
+     * Heavy pages under PSI's mobile throttling simulation can take well over a minute,
+     * so this gives each request a generous timeout rather than PSI's usual 20-40s.
      *
      * @return array<string,array<string,mixed>> keyed by strategy, each ready to fill a WebsiteAudit row.
      */
@@ -25,7 +26,7 @@ class PageSpeedInsightsService
     {
         $responses = Http::pool(fn (Pool $pool) => collect(self::STRATEGIES)
             ->mapWithKeys(fn ($strategy) => [
-                $strategy => $pool->as($strategy)->timeout(90)->get(self::ENDPOINT, $this->params($url, $strategy)),
+                $strategy => $pool->as($strategy)->timeout(170)->get(self::ENDPOINT, $this->params($url, $strategy)),
             ])
             ->all());
 

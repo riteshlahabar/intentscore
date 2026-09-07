@@ -143,6 +143,12 @@ class ProspectController extends Controller
             return back()->withErrors(['audit' => 'Add a website URL to this prospect before running an audit.']);
         }
 
+        // Heavy pages can take well over a minute under PSI's mobile throttling;
+        // avoid PHP's own default execution limit killing the request first.
+        if (function_exists('set_time_limit')) {
+            set_time_limit(200);
+        }
+
         $results = $this->pageSpeed->auditBoth($prospect->website);
         $failures = [];
 
