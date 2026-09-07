@@ -134,37 +134,37 @@ class ProspectController extends Controller
         ]);
     }
 
-    /** Runs a Google PageSpeed Insights audit (mobile + desktop) for the prospect's website (PDF section 13). */
-    public function runAudit(Prospect $prospect)
+    /**
+     * Runs one Google PageSpeed Insights audit for the prospect's website (PDF section 13).
+     * Mobile and desktop are separate requests so a slow strategy cannot drag the other
+     * past the server's request limit, and either can be re-run on its own.
+     */
+    public function runAudit(Request $request, Prospect $prospect)
     {
         $this->authorize('update', $prospect);
+
+        $strategy = $request->validate([
+            'strategy' => ['required', Rule::in(PageSpeedInsightsService::STRATEGIES)],
+        ])['strategy'];
 
         if (! $prospect->website) {
             return back()->withErrors(['audit' => 'Add a website URL to this prospect before running an audit.']);
         }
 
-        // Heavy pages can take well over a minute under PSI's mobile throttling;
+        // A heavy page throttled to mobile can take well over a minute;
         // avoid PHP's own default execution limit killing the request first.
         if (function_exists('set_time_limit')) {
             set_time_limit(200);
         }
 
-        $results = $this->pageSpeed->auditBoth($prospect->website);
-        $failures = [];
+        $data = $this->pageSpeed->audit($prospect->website, $strategy);
+        $prospect->websiteAudits()->create($data + ['url' => $prospect->website]);
 
-        foreach ($results as $strategy => $data) {
-            $prospect->websiteAudits()->create($data + ['url' => $prospect->website]);
-
-            if ($data['status'] === 'failed') {
-                $failures[] = ucfirst($strategy).' — '.$data['error_message'];
-            }
+        if ($data['status'] === 'failed') {
+            return back()->withErrors(['audit' => ucfirst($strategy).' audit failed: '.$data['error_message']]);
         }
 
-        if ($failures) {
-            return back()->withErrors(['audit' => 'Audit finished with errors: '.implode(' | ', $failures)]);
-        }
-
-        return back()->with('success', 'Website audit completed (mobile + desktop).');
+        return back()->with('success', ucfirst($strategy).' audit completed.');
     }
 
     public function edit(Prospect $prospect)
