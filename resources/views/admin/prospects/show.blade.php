@@ -192,8 +192,11 @@
                 <strong>Instagram Audit</strong>
                 <form method="post" action="{{ route('admin.prospects.instagram',$prospect) }}" class="toolbar-actions" data-instagram-form>@csrf
                     <input type="text" name="instagram" class="form-control form-control-sm" style="width:230px"
-                           placeholder="instagram.com/username" value="{{ old('instagram', $latestInstagramAudit?->username) }}">
-                    <button class="btn btn-primary btn-sm"><i class="ri-instagram-line me-1"></i>Fetch Profile</button>
+                           placeholder="instagram.com/username" value="{{ old('instagram', $latestInstagramAudit?->username) }}"
+                           @if(!$instagramReady) disabled @endif>
+                    <button class="btn btn-primary btn-sm" @if(!$instagramReady) disabled @endif>
+                        <i class="ri-instagram-line me-1"></i>Fetch Profile
+                    </button>
                 </form>
             </div>
             <div class="card-body">
@@ -203,7 +206,17 @@
                     </div>
                     <div class="stat-mini mt-1">Reading the public Instagram profile…</div>
                 </div>
-                @if(!$latestInstagramAudit)
+                @if(!$instagramReady)
+                    <div class="empty-state">
+                        <i class="ri-instagram-line"></i>
+                        <div class="mt-2">Instagram audits are not switched on yet.</div>
+                        <div class="stat-mini mt-2">
+                            Instagram stopped serving profile data to signed-out requests, so this needs one logged-in
+                            session cookie. Add <code>INSTAGRAM_SESSION_ID</code> to your <code>.env</code> and run
+                            <code>php artisan config:clear</code>.
+                        </div>
+                    </div>
+                @elseif(!$latestInstagramAudit)
                     <div class="empty-state"><i class="ri-instagram-line"></i><div class="mt-2">Paste the prospect's Instagram profile link above to pull their public profile.</div></div>
                 @elseif($latestInstagramAudit->status === 'failed')
                     <div class="psi-error">

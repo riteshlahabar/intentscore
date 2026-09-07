@@ -60,16 +60,16 @@ class WebProfileSource implements ProfileSource
         }
 
         /*
-         * 429 is a different animal: a temporary throttle on this server's IP address,
-         * which does clear on its own. It is worth saying so rather than sending the
-         * salesperson off to configure something, but an anonymous caller earns the
-         * throttle quickly and a session is what actually stops it recurring.
+         * 429 is a throttle rather than the wall, and it does clear - but waiting it out
+         * only earns a 401, because the anonymous endpoint is closed either way. Saying
+         * "try again later" here would be true and still useless, so it points at the
+         * one thing that changes the outcome.
          */
         if ($response->status() === 429) {
             throw new RuntimeException(
-                'Instagram is throttling this server (HTTP 429). This clears on its own, so try again in a '
-                .'few minutes. Anonymous requests get throttled quickly - setting INSTAGRAM_SESSION_ID makes '
-                .'it far less likely.'
+                'Instagram is throttling this server (HTTP 429), and once that clears the anonymous endpoint '
+                .'answers with a login wall anyway. Set INSTAGRAM_SESSION_ID in your .env - without it this '
+                .'button cannot return data.'
             );
         }
 

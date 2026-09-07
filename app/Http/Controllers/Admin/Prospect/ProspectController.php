@@ -134,7 +134,19 @@ class ProspectController extends Controller
             'latestMobileAudit' => $prospect->latestAuditFor('mobile'),
             'latestDesktopAudit' => $prospect->latestAuditFor('desktop'),
             'latestInstagramAudit' => $prospect->latestInstagramAudit(),
+            'instagramReady' => $this->instagramReady(),
         ]);
+    }
+
+    /**
+     * Instagram closed its anonymous endpoint, so the audit button can only work once a
+     * source is configured. Knowing that up front lets the screen say so instead of
+     * letting a salesperson click and read a failure back.
+     */
+    private function instagramReady(): bool
+    {
+        return config('services.instagram.source') !== 'web'
+            || filled(config('services.instagram.session_id'));
     }
 
     /**
@@ -182,6 +194,10 @@ class ProspectController extends Controller
         $link = $request->validate([
             'instagram' => ['required', 'string', 'max:255'],
         ])['instagram'];
+
+        if (! $this->instagramReady()) {
+            return back()->withErrors(['instagram' => 'Instagram audits are not configured yet. Add INSTAGRAM_SESSION_ID to your .env, then run php artisan config:clear.']);
+        }
 
         $data = $this->instagram->audit($link);
         $prospect->instagramAudits()->create($data);
