@@ -40,14 +40,19 @@ return [
     ],
 
     /*
-     * Which ProfileSource reads a prospect's public Instagram profile. "web" needs no
-     * key but Instagram now answers it with a login wall, so a paid provider has to be
-     * registered here and selected with INSTAGRAM_SOURCE before the feature returns data.
+     * Which ProfileSource reads a prospect's public Instagram profile.
+     *
+     * "web" is the anonymous call and Instagram now answers it with a login wall, so it
+     * is only a fallback. Setting INSTAGRAM_SESSION_ID switches to "session" on its own,
+     * because a configured cookie is only ever there to be used.
      */
     'instagram' => [
-        'source' => env('INSTAGRAM_SOURCE', 'web'),
+        'source' => env('INSTAGRAM_SOURCE', env('INSTAGRAM_SESSION_ID') ? 'session' : 'web'),
+        'session_id' => env('INSTAGRAM_SESSION_ID'),
+        'csrf_token' => env('INSTAGRAM_CSRF_TOKEN'),
         'sources' => [
             'web' => App\Services\SmartLink\Instagram\WebProfileSource::class,
+            'session' => App\Services\SmartLink\Instagram\SessionCookieSource::class,
         ],
     ],
 

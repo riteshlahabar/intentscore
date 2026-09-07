@@ -48,17 +48,28 @@ class WebProfileSource implements ProfileSource
         }
 
         /*
-         * 401, 403 and 429 are one refusal wearing three hats: Instagram serves the same
-         * "require_login" body with whichever code the edge decides on, and a host that
-         * gets 429 keeps getting it. Retrying does not help, so they share one message -
-         * telling a salesperson to "try again later" would just send them back to a
-         * button that cannot work.
+         * 401 and 403 are the login wall, and no amount of retrying clears them: the
+         * anonymous endpoint has been closed and only a session cookie gets past it.
          */
-        if (in_array($response->status(), [401, 403, 429], true) || $response->json('require_login')) {
+        if (in_array($response->status(), [401, 403], true) || $response->json('require_login')) {
             throw new RuntimeException(
-                'Instagram no longer serves public profile data without a login (HTTP '.$response->status().'), '
-                .'so this will not succeed on a retry. A provider has to be configured: register it in '
-                .'config/services.php under instagram.sources and point INSTAGRAM_SOURCE at it.'
+                'Instagram no longer serves profile data to anonymous requests (HTTP '.$response->status().'), '
+                .'so retrying will not help. Add INSTAGRAM_SESSION_ID to your .env to read profiles through a '
+                .'logged-in Instagram session instead.'
+            );
+        }
+
+        /*
+         * 429 is a different animal: a temporary throttle on this server's IP address,
+         * which does clear on its own. It is worth saying so rather than sending the
+         * salesperson off to configure something, but an anonymous caller earns the
+         * throttle quickly and a session is what actually stops it recurring.
+         */
+        if ($response->status() === 429) {
+            throw new RuntimeException(
+                'Instagram is throttling this server (HTTP 429). This clears on its own, so try again in a '
+                .'few minutes. Anonymous requests get throttled quickly - setting INSTAGRAM_SESSION_ID makes '
+                .'it far less likely.'
             );
         }
 
