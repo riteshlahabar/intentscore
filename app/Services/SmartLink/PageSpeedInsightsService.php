@@ -87,9 +87,15 @@ class PageSpeedInsightsService
             return [
                 'strategy' => $strategy,
                 'status' => 'failed',
-                'error_message' => $e->getMessage(),
+                'error_message' => $this->scrub($e->getMessage()),
             ];
         }
+    }
+
+    /** Guzzle puts the full request URL in its exception messages, API key included. */
+    private function scrub(string $message): string
+    {
+        return preg_replace('/([?&]key=)[^&\s]+/i', '$1[hidden]', $message);
     }
 
     private function scoreOf(array $categories, string $key): ?int
