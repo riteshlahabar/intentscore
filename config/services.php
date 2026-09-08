@@ -50,6 +50,15 @@ return [
         'source' => env('INSTAGRAM_SOURCE', env('INSTAGRAM_SESSION_ID') ? 'session' : 'web'),
         'session_id' => env('INSTAGRAM_SESSION_ID'),
         'csrf_token' => env('INSTAGRAM_CSRF_TOKEN'),
+
+        /*
+         * Shared hosting is refused by Instagram whatever cookie it sends, so
+         * INSTAGRAM_SOURCE=worker parks audits as pending rows for the local PC in
+         * local_pc_instagram_script to fetch and post back. The token is the only thing
+         * standing between that queue and the internet, so it has to be a long random
+         * string and has to match the worker's own config.
+         */
+        'worker_token' => env('INSTAGRAM_WORKER_TOKEN'),
         'sources' => [
             'web' => App\Services\SmartLink\Instagram\WebProfileSource::class,
             'session' => App\Services\SmartLink\Instagram\SessionCookieSource::class,

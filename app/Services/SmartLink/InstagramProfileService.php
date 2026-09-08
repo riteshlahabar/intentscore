@@ -61,6 +61,25 @@ class InstagramProfileService
     }
 
     /**
+     * Scores a profile that was fetched somewhere else - by the local worker PC, whose
+     * home connection Instagram still answers - so a pushed result is read by exactly the
+     * same code as a result this server fetched itself.
+     *
+     * The worker sends the picture it already downloaded, because re-fetching it from the
+     * blocked server would only lose it.
+     *
+     * @param  array<string,mixed>  $user  Instagram's `data.user` object.
+     * @return array<string,mixed>
+     */
+    public function rowFromProfile(string $username, array $user, ?string $picture = null): array
+    {
+        return [
+            'username' => $username,
+            'profile_url' => 'https://www.instagram.com/'.$username.'/',
+        ] + $this->fields($user, $picture);
+    }
+
+    /**
      * Accepts anything a salesperson is likely to paste: a full profile URL with or
      * without protocol or query string, an @handle, or the bare username.
      */
@@ -91,7 +110,7 @@ class InstagramProfileService
     }
 
     /** @return array<string,mixed> */
-    private function fields(array $user): array
+    private function fields(array $user, ?string $picture = null): array
     {
         $followers = (int) ($user['edge_followed_by']['count'] ?? 0);
         $following = (int) ($user['edge_follow']['count'] ?? 0);
@@ -106,7 +125,7 @@ class InstagramProfileService
             'biography' => $user['biography'] ?: null,
             'external_url' => $user['external_url'] ?: null,
             'business_address' => $this->address($user),
-            'profile_pic' => $this->picture($user['profile_pic_url_hd'] ?? $user['profile_pic_url'] ?? null),
+            'profile_pic' => $picture ?: $this->picture($user['profile_pic_url_hd'] ?? $user['profile_pic_url'] ?? null),
             'is_verified' => (bool) ($user['is_verified'] ?? false),
             'is_business' => (bool) ($user['is_business_account'] ?? false),
             'is_private' => (bool) ($user['is_private'] ?? false),

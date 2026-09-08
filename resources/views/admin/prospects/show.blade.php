@@ -211,13 +211,23 @@
                         <i class="ri-instagram-line"></i>
                         <div class="mt-2">Instagram audits are not switched on yet.</div>
                         <div class="stat-mini mt-2">
-                            Instagram stopped serving profile data to signed-out requests, so this needs one logged-in
-                            session cookie. Add <code>INSTAGRAM_SESSION_ID</code> to your <code>.env</code> and run
-                            <code>php artisan config:clear</code>.
+                            Instagram refuses this server's hosting IP, so audits run from the worker PC instead. Set
+                            <code>INSTAGRAM_SOURCE=worker</code> and <code>INSTAGRAM_WORKER_TOKEN</code> in your
+                            <code>.env</code>, run <code>php artisan config:clear</code>, and start the script in
+                            <code>local_pc_instagram_script</code>.
                         </div>
                     </div>
                 @elseif(!$latestInstagramAudit)
                     <div class="empty-state"><i class="ri-instagram-line"></i><div class="mt-2">Paste the prospect's Instagram profile link above to pull their public profile.</div></div>
+                @elseif($latestInstagramAudit->status === 'pending')
+                    <div class="empty-state">
+                        <i class="ri-time-line"></i>
+                        <div class="mt-2">Waiting for the worker PC to fetch <strong>{{ '@'.$latestInstagramAudit->username }}</strong>.</div>
+                        <div class="stat-mini mt-2">
+                            Queued {{ $latestInstagramAudit->created_at->diffForHumans() }}. Refresh this page in a
+                            minute. If it stays here, the worker PC is switched off or its script is not running.
+                        </div>
+                    </div>
                 @elseif($latestInstagramAudit->status === 'failed')
                     <div class="psi-error">
                         <i class="ri-error-warning-line me-1"></i>Could not read this Instagram profile

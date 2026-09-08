@@ -145,6 +145,10 @@ class ProspectController extends Controller
      */
     private function instagramReady(): bool
     {
+        if (config('services.instagram.source') === 'worker') {
+            return filled(config('services.instagram.worker_token'));
+        }
+
         return config('services.instagram.source') !== 'web'
             || filled(config('services.instagram.session_id'));
     }
@@ -196,7 +200,29 @@ class ProspectController extends Controller
         ])['instagram'];
 
         if (! $this->instagramReady()) {
-            return back()->withErrors(['instagram' => 'Instagram audits are not configured yet. Add INSTAGRAM_SESSION_ID to your .env, then run php artisan config:clear.']);
+            return back()->withErrors(['instagram' => 'Instagram audits are not configured yet. Add INSTAGRAM_SESSION_ID or INSTAGRAM_WORKER_TOKEN to your .env, then run php artisan config:clear.']);
+        }
+
+        /*
+         * In worker mode this server never calls Instagram - its hosting IP is refused -
+         * so the audit is parked as a pending row and the local PC picks it up. The
+         * screen returns immediately rather than holding the request open for a machine
+         * that may not be switched on.
+         */
+        if (config('services.instagram.source') === 'worker') {
+            try {
+                $username = $this->instagram->username($link);
+            } catch (Throwable $e) {
+                return back()->withErrors(['instagram' => $e->getMessage()]);
+            }
+
+            $prospect->instagramAudits()->create([
+                'username' => $username,
+                'profile_url' => 'https://www.instagram.com/'.$username.'/',
+                'status' => 'pending',
+            ]);
+
+            return back()->with('success', 'Queued @'.$username.'. The local worker PC will fill this in shortly.');
         }
 
         $data = $this->instagram->audit($link);

@@ -29,3 +29,7 @@ Thumbs.db
 .env.*.bak
 storage/framework/sessions/*
 !storage/framework/sessions/.gitkeep
+
+# Local Instagram worker: holds a live Instagram session cookie, never commit it.
+/local_pc_instagram_script/config.php
+/local_pc_instagram_script/worker.log
