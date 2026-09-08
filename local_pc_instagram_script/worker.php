@@ -85,9 +85,23 @@ function handle(array $config, int $id, string $username): void
     try {
         $user = instagramProfile($config, $username);
     } catch (TransientError $e) {
-        say('  skipped: '.$e->getMessage().' (stays queued, will retry next run)');
+        /*
+         * Instagram throttles its JSON endpoint long before it stops rendering the
+         * profile page, and that page's meta description carries the follower, following
+         * and post counts. Falling back to it turns a throttle into a partial audit
+         * instead of nothing - the counts and the profile arrive, only the per-post
+         * engagement is missing.
+         */
+        say('  '.$e->getMessage().' - reading the profile page instead');
 
-        return;
+        try {
+            $user = profileFromPage($config, $username);
+            say('  page fallback worked (no per-post engagement data)');
+        } catch (Throwable $inner) {
+            say('  skipped: '.$inner->getMessage().' (stays queued, will retry next run)');
+
+            return;
+        }
     } catch (Throwable $e) {
         say('  failed: '.$e->getMessage());
         postResult($config, ['id' => $id, 'error' => $e->getMessage()]);
@@ -119,7 +133,7 @@ function instagramProfile(array $config, string $username): array
             'User-Agent: '.USER_AGENT,
             'Accept: */*',
             'Accept-Language: en-US,en;q=0.9',
-            'Referer: https://www.instagram.com/'.$username.'/',
+            "Referer: https://www.instagram.com/{$username}/",
             'Origin: https://www.instagram.com',
             'Sec-Fetch-Site: same-origin',
             'Sec-Fetch-Mode: cors',
@@ -156,6 +170,76 @@ function instagramProfile(array $config, string $username): array
     }
 
     return $user;
+}
+
+/**
+ * Builds the same data.user shape out of the profile page's meta tags, for when the JSON
+ * endpoint is throttled but the page still renders.
+ *
+ * Instagram writes the whole summary into one meta description:
+ *   "2,988 Followers, 7,492 Following, 69 Posts - TurnKey Infotech (@handle) on Instagram: "bio""
+ *
+ * Category, website, address and per-post engagement are not on the page - they arrive
+ * through the very API call that was refused - so those stay empty and the portal scores
+ * what it has.
+ *
+ * @return array<string,mixed>
+ */
+function profileFromPage(array $config, string $username): array
+{
+    [$status, $html] = request(
+        "https://www.instagram.com/{$username}/",
+        [
+            'User-Agent: '.USER_AGENT,
+            'Accept: text/html,application/xhtml+xml',
+            'Accept-Language: en-US,en;q=0.9',
+            'Cookie: '.cookieHeader(cookieJar($config)),
+        ]
+    );
+
+    if ($status !== 200) {
+        throw new TransientError("The profile page also returned HTTP {$status}.");
+    }
+
+    if (! preg_match('/<meta[^>]+(?:name="description"|property="og:description")[^>]+content="([^"]+)"/i', $html, $meta)) {
+        throw new TransientError('The profile page did not include the profile summary - the session may be signed out.');
+    }
+
+    $summary = html_entity_decode($meta[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    if (! preg_match('/^([\d.,KMkm]+)\s+Followers,\s+([\d.,KMkm]+)\s+Following,\s+([\d.,KMkm]+)\s+Posts\s*[-–]\s*(.*?)\s*\(@/u', $summary, $m)) {
+        throw new TransientError('Could not read the counts from the profile page.');
+    }
+
+    preg_match('/on Instagram:\s*"(.*)"\s*$/us', $summary, $bio);
+    preg_match('/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i', $html, $image);
+
+    return [
+        'full_name' => $m[4] !== '' ? $m[4] : null,
+        'biography' => isset($bio[1]) ? trim($bio[1]) : null,
+        'category_name' => null,
+        'external_url' => null,
+        'business_address_json' => null,
+        'profile_pic_url_hd' => $image[1] ?? null,
+        'is_verified' => false,
+        'is_business_account' => false,
+        'is_private' => false,
+        'edge_followed_by' => ['count' => compactNumber($m[1])],
+        'edge_follow' => ['count' => compactNumber($m[2])],
+        'edge_owner_to_timeline_media' => ['count' => compactNumber($m[3]), 'edges' => []],
+    ];
+}
+
+/** Instagram shortens large counts in the meta tag, so "1.2M" has to become 1200000. */
+function compactNumber(string $value): int
+{
+    $number = (float) str_replace(',', '', rtrim($value, 'KMkm'));
+
+    return (int) round($number * match (strtoupper(substr($value, -1))) {
+        'K' => 1000,
+        'M' => 1000000,
+        default => 1,
+    });
 }
 
 /**

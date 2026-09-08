@@ -311,6 +311,10 @@
                                 </div>
                                 @if($ig->is_private)
                                     <div class="stat-mini mt-3"><span class="badge-soft soft-amber">Private account</span> Post data is hidden, so engagement and consistency cannot be measured.</div>
+                                @elseif($ig->engagement_rate === null)
+                                    {{-- Counts came from the profile page because Instagram throttled the fuller
+                                         request; the account type is unknown here, so do not guess at it. --}}
+                                    <div class="stat-mini mt-3"><span class="badge-soft soft-amber">Limited data</span> Instagram throttled the detailed request, so only the public counts were read. Re-run later for engagement and posting consistency.</div>
                                 @elseif(!$ig->is_business)
                                     <div class="stat-mini mt-3"><span class="badge-soft soft-gray">Personal account</span> No business category or address is published on personal profiles.</div>
                                 @endif
