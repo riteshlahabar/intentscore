@@ -18,11 +18,10 @@ use App\Http\Controllers\Api\InstagramWorkerController;
  * Called by the local worker PC (local_pc_instagram_script), not by a browser: a shared
  * secret stands in for a login, and the CSRF token a session would carry does not exist.
  */
-Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
-    ->prefix('api/instagram')->middleware('throttle:120,1')->group(function () {
-        Route::get('pending', [InstagramWorkerController::class, 'pending'])->name('instagram.worker.pending');
-        Route::post('result', [InstagramWorkerController::class, 'result'])->name('instagram.worker.result');
-    });
+Route::prefix('api/instagram')->middleware('throttle:120,1')->group(function () {
+    Route::get('pending', [InstagramWorkerController::class, 'pending'])->name('instagram.worker.pending');
+    Route::post('result', [InstagramWorkerController::class, 'result'])->name('instagram.worker.result');
+});
 
 Route::get('/', fn () => redirect()->route('login'));
 Route::get('/login', [LoginController::class, 'show'])->name('login');

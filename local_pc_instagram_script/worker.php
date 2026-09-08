@@ -69,12 +69,25 @@ function runOnce(array $config): void
     }
 }
 
+/**
+ * A problem that is expected to pass on its own, such as Instagram throttling. The job
+ * is deliberately left queued rather than reported as failed, so the next run picks it
+ * up again instead of a salesperson having to re-enter the link.
+ */
+class TransientError extends RuntimeException
+{
+}
+
 function handle(array $config, int $id, string $username): void
 {
     say("  @{$username} …");
 
     try {
         $user = instagramProfile($config, $username);
+    } catch (TransientError $e) {
+        say('  skipped: '.$e->getMessage().' (stays queued, will retry next run)');
+
+        return;
     } catch (Throwable $e) {
         say('  failed: '.$e->getMessage());
         postResult($config, ['id' => $id, 'error' => $e->getMessage()]);
@@ -125,7 +138,11 @@ function instagramProfile(array $config, string $username): array
     }
 
     if ($status === 429) {
-        throw new RuntimeException('Instagram is throttling this account. Try again later.');
+        throw new TransientError('Instagram is throttling this account (HTTP 429).');
+    }
+
+    if ($status === 0) {
+        throw new TransientError('No reply from Instagram - check this PC\'s internet.');
     }
 
     if ($status !== 200) {
