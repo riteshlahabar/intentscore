@@ -71,8 +71,18 @@ class Prospect extends Model
         return $this->hasMany(InstagramAudit::class, 'prospect_id');
     }
 
+    /**
+     * The newest audit that actually has something to show. A queued audit deliberately
+     * does not count: while the worker PC is fetching a refresh, the card should keep
+     * showing the numbers from last time rather than emptying itself.
+     */
     public function latestInstagramAudit(): ?InstagramAudit
     {
-        return $this->instagramAudits()->latest('id')->first();
+        return $this->instagramAudits()->whereIn('status', ['completed', 'failed'])->latest('id')->first();
+    }
+
+    public function pendingInstagramAudit(): ?InstagramAudit
+    {
+        return $this->instagramAudits()->where('status', 'pending')->latest('id')->first();
     }
 }

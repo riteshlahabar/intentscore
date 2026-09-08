@@ -34,6 +34,17 @@ const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
 /** Instagram throttles a burst, so profiles are spaced out rather than fired together. */
 const GAP_BETWEEN_PROFILES = 20;
 
+/*
+ * --check <username> fetches one profile and prints what came back without touching the
+ * portal or the queue, which is the quickest way to tell an Instagram problem apart from
+ * a portal problem when something is not working.
+ */
+if (($checkAt = array_search('--check', $argv, true)) !== false) {
+    check($config, (string) ($argv[$checkAt + 1] ?? ''));
+
+    exit;
+}
+
 $loop = in_array('--loop', $argv, true);
 
 do {
@@ -47,6 +58,57 @@ do {
         sleep((int) $config['poll_seconds']);
     }
 } while ($loop);
+
+/** Prints what Instagram gives back for one profile, and which route it came from. */
+function check(array $config, string $username): void
+{
+    if ($username === '') {
+        exit("Usage: php worker.php --check <username>\n");
+    }
+
+    say("checking @{$username}");
+
+    $route = 'API';
+
+    try {
+        $user = instagramProfile($config, $username);
+    } catch (TransientError $e) {
+        say('  API: '.$e->getMessage());
+        say('  trying the profile page instead …');
+        $route = 'profile page';
+
+        try {
+            $user = profileFromPage($username);
+        } catch (Throwable $inner) {
+            say('  FAILED: '.$inner->getMessage());
+
+            return;
+        }
+    } catch (Throwable $e) {
+        say('  FAILED: '.$e->getMessage());
+
+        return;
+    }
+
+    $posts = $user['edge_owner_to_timeline_media']['edges'] ?? [];
+
+    say("  OK - read via {$route}");
+
+    foreach ([
+        'name' => $user['full_name'] ?? null,
+        'followers' => $user['edge_followed_by']['count'] ?? null,
+        'following' => $user['edge_follow']['count'] ?? null,
+        'posts' => $user['edge_owner_to_timeline_media']['count'] ?? null,
+        'category' => $user['category_name'] ?? null,
+        'website' => $user['external_url'] ?? null,
+        'address' => $user['business_address_json'] ?? null,
+        'bio' => isset($user['biography']) ? substr((string) $user['biography'], 0, 60) : null,
+        'recent posts read' => count($posts).($posts === [] ? ' (no engagement data)' : ''),
+        'profile picture' => ($user['profile_pic_url_hd'] ?? $user['profile_pic_url'] ?? null) ? 'yes' : 'no',
+    ] as $label => $value) {
+        say('    '.str_pad($label, 18).': '.($value === null || $value === '' ? '-' : $value));
+    }
+}
 
 function runOnce(array $config): void
 {
@@ -95,7 +157,7 @@ function handle(array $config, int $id, string $username): void
         say('  '.$e->getMessage().' - reading the profile page instead');
 
         try {
-            $user = profileFromPage($config, $username);
+            $user = profileFromPage($username);
             say('  page fallback worked (no per-post engagement data)');
         } catch (Throwable $inner) {
             say('  skipped: '.$inner->getMessage().' (stays queued, will retry next run)');
@@ -185,15 +247,29 @@ function instagramProfile(array $config, string $username): array
  *
  * @return array<string,mixed>
  */
-function profileFromPage(array $config, string $username): array
+function profileFromPage(string $username): array
 {
+    /*
+     * These headers are the whole trick. Instagram serves a bare app shell with no meta
+     * tags to anything that does not look like a browser opening a page, and the full
+     * navigation set - Upgrade-Insecure-Requests, the Sec-Fetch-* quartet and the sec-ch-ua
+     * hints - is what makes it render the real profile. It works signed out as well, so no
+     * cookie is sent: this route needs no Instagram account at all.
+     */
     [$status, $html] = request(
         "https://www.instagram.com/{$username}/",
         [
             'User-Agent: '.USER_AGENT,
-            'Accept: text/html,application/xhtml+xml',
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language: en-US,en;q=0.9',
-            'Cookie: '.cookieHeader(cookieJar($config)),
+            'Upgrade-Insecure-Requests: 1',
+            'Sec-Fetch-Site: none',
+            'Sec-Fetch-Mode: navigate',
+            'Sec-Fetch-User: ?1',
+            'Sec-Fetch-Dest: document',
+            'sec-ch-ua: "Chromium";v="126", "Google Chrome";v="126", "Not-A.Brand";v="99"',
+            'sec-ch-ua-mobile: ?0',
+            'sec-ch-ua-platform: "Windows"',
         ]
     );
 
@@ -201,26 +277,36 @@ function profileFromPage(array $config, string $username): array
         throw new TransientError("The profile page also returned HTTP {$status}.");
     }
 
-    if (! preg_match('/<meta[^>]+(?:name="description"|property="og:description")[^>]+content="([^"]+)"/i', $html, $meta)) {
-        throw new TransientError('The profile page did not include the profile summary - the session may be signed out.');
-    }
+    /*
+     * Both meta tags carry the counts, but only name="description" carries the bio, so it
+     * is tried first; og:description says "See Instagram photos and videos from X" where
+     * the other says the account's real name.
+     */
+    $summary = metaContent($html, 'name="description"') ?? metaContent($html, 'property="og:description"');
 
-    $summary = html_entity_decode($meta[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    if ($summary === null) {
+        throw new TransientError('The profile page did not include the profile summary.');
+    }
 
     if (! preg_match('/^([\d.,KMkm]+)\s+Followers,\s+([\d.,KMkm]+)\s+Following,\s+([\d.,KMkm]+)\s+Posts\s*[-–]\s*(.*?)\s*\(@/u', $summary, $m)) {
         throw new TransientError('Could not read the counts from the profile page.');
     }
 
     preg_match('/on Instagram:\s*"(.*)"\s*$/us', $summary, $bio);
-    preg_match('/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i', $html, $image);
+
+    /* og:title is "<name> (@handle) • Instagram photos and videos" - the cleanest name. */
+    $title = metaContent($html, 'property="og:title"') ?? '';
+    $name = preg_match('/^(.*?)\s*\(@/u', $title, $t)
+        ? $t[1]
+        : preg_replace('/^See Instagram photos and videos from\s+/iu', '', $m[4]);
 
     return [
-        'full_name' => $m[4] !== '' ? $m[4] : null,
+        'full_name' => trim((string) $name) !== '' ? trim((string) $name) : null,
         'biography' => isset($bio[1]) ? trim($bio[1]) : null,
         'category_name' => null,
         'external_url' => null,
         'business_address_json' => null,
-        'profile_pic_url_hd' => $image[1] ?? null,
+        'profile_pic_url_hd' => metaContent($html, 'property="og:image"'),
         'is_verified' => false,
         'is_business_account' => false,
         'is_private' => false,
@@ -228,6 +314,29 @@ function profileFromPage(array $config, string $username): array
         'edge_follow' => ['count' => compactNumber($m[2])],
         'edge_owner_to_timeline_media' => ['count' => compactNumber($m[3]), 'edges' => []],
     ];
+}
+
+/**
+ * Reads one meta tag's content, with the entities Instagram escapes into it decoded.
+ *
+ * The tag is located first and the content read out of it second, because Instagram is
+ * not consistent about attribute order - og:* tags put property before content, while the
+ * plain description tag writes content="…" name="description", and a single pattern that
+ * assumes one order silently misses the other.
+ */
+function metaContent(string $html, string $attribute): ?string
+{
+    if (! preg_match('/<meta[^>]*'.preg_quote($attribute, '/').'[^>]*>/i', $html, $tag)) {
+        return null;
+    }
+
+    if (! preg_match('/content="([^"]*)"/i', $tag[0], $m)) {
+        return null;
+    }
+
+    $content = html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    return trim($content) === '' ? null : $content;
 }
 
 /** Instagram shortens large counts in the meta tag, so "1.2M" has to become 1200000. */

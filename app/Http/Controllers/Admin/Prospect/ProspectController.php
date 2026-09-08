@@ -134,6 +134,7 @@ class ProspectController extends Controller
             'latestMobileAudit' => $prospect->latestAuditFor('mobile'),
             'latestDesktopAudit' => $prospect->latestAuditFor('desktop'),
             'latestInstagramAudit' => $prospect->latestInstagramAudit(),
+            'pendingInstagramAudit' => $prospect->pendingInstagramAudit(),
             'instagramReady' => $this->instagramReady(),
         ]);
     }
@@ -216,11 +217,14 @@ class ProspectController extends Controller
                 return back()->withErrors(['instagram' => $e->getMessage()]);
             }
 
-            $prospect->instagramAudits()->create([
-                'username' => $username,
-                'profile_url' => 'https://www.instagram.com/'.$username.'/',
-                'status' => 'pending',
-            ]);
+            /*
+             * Clicking twice should not queue the job twice - the worker would fetch the
+             * same profile again for nothing, and each extra row only delays the result.
+             */
+            $prospect->instagramAudits()->updateOrCreate(
+                ['status' => 'pending'],
+                ['username' => $username, 'profile_url' => 'https://www.instagram.com/'.$username.'/'],
+            );
 
             return back()->with('success', 'Queued @'.$username.'. The local worker PC will fill this in shortly.');
         }

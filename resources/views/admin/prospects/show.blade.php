@@ -217,14 +217,14 @@
                             <code>local_pc_instagram_script</code>.
                         </div>
                     </div>
-                @elseif(!$latestInstagramAudit)
+                @elseif(!$latestInstagramAudit && !$pendingInstagramAudit)
                     <div class="empty-state"><i class="ri-instagram-line"></i><div class="mt-2">Paste the prospect's Instagram profile link above to pull their public profile.</div></div>
-                @elseif($latestInstagramAudit->status === 'pending')
+                @elseif(!$latestInstagramAudit)
                     <div class="empty-state">
                         <i class="ri-time-line"></i>
-                        <div class="mt-2">Waiting for the worker PC to fetch <strong>{{ '@'.$latestInstagramAudit->username }}</strong>.</div>
+                        <div class="mt-2">Waiting for the worker PC to fetch <strong>{{ '@'.$pendingInstagramAudit->username }}</strong>.</div>
                         <div class="stat-mini mt-2">
-                            Queued {{ $latestInstagramAudit->created_at->diffForHumans() }}. Refresh this page in a
+                            Queued {{ $pendingInstagramAudit->created_at->diffForHumans() }}. Refresh this page in a
                             minute. If it stays here, the worker PC is switched off or its script is not running.
                         </div>
                     </div>
@@ -271,6 +271,9 @@
                                 <div class="stat-mini psi-audited mt-3">
                                     <a href="{{ $ig->profile_url }}" target="_blank" rel="noopener" class="text-brand">Open profile</a>
                                     · Fetched {{ $ig->created_at->format('d M Y, h:i A') }}
+                                    @if($pendingInstagramAudit)
+                                        <div class="mt-1"><i class="ri-time-line me-1"></i>A refresh is queued - the worker PC will update these numbers.</div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
