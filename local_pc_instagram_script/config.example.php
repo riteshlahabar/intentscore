@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Copy this file to config.php and fill in the four values.
+ * Copy this file to config.php and fill in the two values.
  *
  * config.php holds a live Instagram login, so it stays on this PC: it is gitignored and
  * must never be committed or copied onto the server.
@@ -16,19 +16,17 @@ return [
     'worker_token' => '',
 
     /*
-     * The sessionid cookie of a logged-in Instagram account.
-     *
-     * Chrome: log in to Instagram, press F12, Application tab, Cookies,
-     * https://www.instagram.com, copy the value of the "sessionid" row. Pasting the whole
-     * cookie header works too and is slightly more reliable, because it carries csrftoken
-     * and mid along with it.
-     *
-     * Use a throwaway account, never the company one - Instagram may restrict an account
-     * that is queried this way, and the cookie stops working when that account logs out
-     * or changes its password.
+     * Leave this empty. The Instagram cookie is pasted in the portal under
+     * Settings > Instagram Session and this script reads it from there, so it is kept in
+     * one place instead of two. Filling it in here overrides the portal's copy, which is
+     * only useful for testing a different account.
      */
     'instagram_session_id' => '',
 
-    // How often --loop mode checks the portal for queued audits.
-    'poll_seconds' => 300,
+    /*
+     * How often --loop mode asks the portal for queued audits. This only talks to the
+     * portal, never to Instagram, so a short interval does not increase the load on the
+     * Instagram account - it only makes a clicked audit start sooner.
+     */
+    'poll_seconds' => 10,
 ];

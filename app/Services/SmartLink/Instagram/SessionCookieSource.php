@@ -32,10 +32,10 @@ class SessionCookieSource implements ProfileSource
 
     public function profile(string $username): array
     {
-        $session = trim((string) config('services.instagram.session_id'));
+        $session = app(SessionStore::class)->get();
 
         if ($session === '') {
-            throw new RuntimeException('No Instagram session is configured. Add INSTAGRAM_SESSION_ID to your .env to enable Instagram audits.');
+            throw new RuntimeException('No Instagram session is configured. Paste one under Settings > Instagram Session to enable Instagram audits.');
         }
 
         $cookies = $this->cookies($session);
@@ -63,7 +63,7 @@ class SessionCookieSource implements ProfileSource
 
         /* Signed in, these mean the session is the problem rather than the profile. */
         if (in_array($response->status(), [401, 403], true) || $response->json('require_login')) {
-            throw new RuntimeException('The Instagram session has expired or been logged out. Copy a fresh sessionid cookie into INSTAGRAM_SESSION_ID and run php artisan config:clear.');
+            throw new RuntimeException('The Instagram session has expired or been logged out. Paste a fresh cookie under Settings > Instagram Session.');
         }
 
         if ($response->status() === 429) {

@@ -21,11 +21,18 @@ if (! file_exists(__DIR__.'/config.php')) {
 
 $config = require __DIR__.'/config.php';
 
-foreach (['portal_url', 'worker_token', 'instagram_session_id'] as $required) {
+foreach (['portal_url', 'worker_token'] as $required) {
     if (trim((string) ($config[$required] ?? '')) === '') {
         exit("config.php is missing a value for '{$required}'.\n");
     }
 }
+
+/*
+ * The Instagram cookie is pasted in the portal under Settings > Instagram Session and
+ * read from there, so refreshing it is one edit in one place rather than an edit here as
+ * well. A value left in config.php still wins, which keeps an older install working.
+ */
+$config['poll_seconds'] = (int) ($config['poll_seconds'] ?? 10) ?: 10;
 
 const ENDPOINT = 'https://www.instagram.com/api/v1/users/web_profile_info/';
 const WEB_APP_ID = '936619743392459';
@@ -210,7 +217,7 @@ function instagramProfile(array $config, string $username): array
     }
 
     if ($status === 401 || $status === 403) {
-        throw new RuntimeException('The Instagram session has expired. Copy a fresh sessionid into config.php.');
+        throw new RuntimeException('The Instagram session has expired. Paste a fresh cookie in the portal under Settings > Instagram Session.');
     }
 
     if ($status === 429) {
@@ -394,6 +401,34 @@ function fetchQueue(array $config): array
     return json_decode($body, true)['jobs'] ?? [];
 }
 
+/**
+ * Reads the Instagram cookie the portal holds. It is asked for once per run and kept in
+ * memory, so a pass over ten queued profiles does not fetch the same cookie ten times.
+ */
+function portalSession(array $config): string
+{
+    static $cached = null;
+
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    [$status, $body] = request(
+        rtrim($config['portal_url'], '/').'/api/instagram/session',
+        ['X-Worker-Token: '.$config['worker_token'], 'Accept: application/json']
+    );
+
+    if ($status === 401) {
+        throw new RuntimeException('Portal rejected the worker token. Check INSTAGRAM_WORKER_TOKEN matches config.php.');
+    }
+
+    if ($status !== 200) {
+        throw new RuntimeException("Portal returned HTTP {$status} when asking for the Instagram session.");
+    }
+
+    return $cached = trim((string) (json_decode($body, true)['session'] ?? ''));
+}
+
 function postResult(array $config, array $payload): void
 {
     [$status, $body] = request(
@@ -448,10 +483,14 @@ function request(string $url, array $headers, ?string $body = null): array
  */
 function cookieJar(array $config): array
 {
-    $session = trim((string) $config['instagram_session_id']);
+    $session = trim((string) ($config['instagram_session_id'] ?? ''));
 
     if ($session === '') {
-        throw new RuntimeException('instagram_session_id is empty in config.php.');
+        $session = portalSession($config);
+    }
+
+    if ($session === '') {
+        throw new RuntimeException('No Instagram session is saved in the portal. Open Settings > Instagram Session and paste the cookie there.');
     }
 
     $cookies = [];

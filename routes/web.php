@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\Prospect\SmartPageController;
 use App\Http\Controllers\Admin\Prospect\SmartDashboardController;
 use App\Http\Controllers\Admin\Prospect\SmartTemplateController;
 use App\Http\Controllers\Admin\Prospect\IntentSettingController;
+use App\Http\Controllers\Admin\Setting\InstagramSettingController;
 use App\Http\Controllers\Api\InstagramWorkerController;
 
 /*
@@ -19,6 +20,7 @@ use App\Http\Controllers\Api\InstagramWorkerController;
  * secret stands in for a login, and the CSRF token a session would carry does not exist.
  */
 Route::prefix('api/instagram')->middleware('throttle:120,1')->group(function () {
+    Route::get('session', [InstagramWorkerController::class, 'session'])->name('instagram.worker.session');
     Route::get('pending', [InstagramWorkerController::class, 'pending'])->name('instagram.worker.pending');
     Route::post('result', [InstagramWorkerController::class, 'result'])->name('instagram.worker.result');
 });
@@ -73,5 +75,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,salesper
         Route::get('users-export', [UserController::class, 'export'])->name('users.export');
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('instagram-settings', [InstagramSettingController::class, 'index'])->name('instagram.settings');
+        Route::put('instagram-settings', [InstagramSettingController::class, 'update'])->name('instagram.settings.update');
     });
 });

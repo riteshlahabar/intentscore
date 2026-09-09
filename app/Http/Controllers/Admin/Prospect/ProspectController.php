@@ -11,6 +11,7 @@ use App\Models\SmartLink\SmartPage;
 use App\Models\SmartLink\SmartPageTemplate;
 use App\Models\User;
 use App\Services\Common\AccessService;
+use App\Services\SmartLink\Instagram\SessionStore;
 use App\Services\SmartLink\InstagramProfileService;
 use App\Services\SmartLink\IntentScoreService;
 use App\Services\SmartLink\PageSpeedInsightsService;
@@ -151,7 +152,7 @@ class ProspectController extends Controller
         }
 
         return config('services.instagram.source') !== 'web'
-            || filled(config('services.instagram.session_id'));
+            || filled(app(SessionStore::class)->get());
     }
 
     /**
@@ -201,7 +202,7 @@ class ProspectController extends Controller
         ])['instagram'];
 
         if (! $this->instagramReady()) {
-            return back()->withErrors(['instagram' => 'Instagram audits are not configured yet. Add INSTAGRAM_SESSION_ID or INSTAGRAM_WORKER_TOKEN to your .env, then run php artisan config:clear.']);
+            return back()->withErrors(['instagram' => 'Instagram audits are not configured yet. Paste a session under Settings > Instagram Session, or set INSTAGRAM_WORKER_TOKEN in the server .env for worker mode.']);
         }
 
         /*

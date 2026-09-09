@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SmartLink\InstagramAudit;
+use App\Services\SmartLink\Instagram\SessionStore;
 use App\Services\SmartLink\InstagramProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,8 +24,22 @@ use Illuminate\Support\Facades\Http;
  */
 class InstagramWorkerController extends Controller
 {
-    public function __construct(private InstagramProfileService $instagram)
+    public function __construct(private InstagramProfileService $instagram, private SessionStore $sessions)
     {
+    }
+
+    /**
+     * Hands the worker the Instagram cookie saved under Settings, so it is pasted in one
+     * place instead of once here and once in the worker PC's config.php. The shared token
+     * is what protects it, exactly as it protects the queue itself.
+     */
+    public function session(Request $request): JsonResponse
+    {
+        if ($denied = $this->denied($request)) {
+            return $denied;
+        }
+
+        return response()->json(['session' => $this->sessions->get()]);
     }
 
     /** Oldest first, so a queue that builds up is worked through in order. */
