@@ -33,11 +33,11 @@
    .client-nav-inner has a fixed height, so the bar has to grow with the logo or the
    image gets clipped; .client-section's scroll-margin-top follows it, otherwise an
    anchored section lands underneath the sticky bar. */
-.client-nav-inner{height:78px}
-.client-logo .brand-logo{height:52px;width:auto;max-width:300px;object-fit:contain;display:block}
-.client-section{scroll-margin-top:80px}
+.client-nav-inner{height:100px}
+.client-logo .brand-logo{height:72px;width:auto;max-width:400px;object-fit:contain;display:block}
+.client-section{scroll-margin-top:102px}
 @media(max-width:600px){
-.client-nav-inner{height:62px}
-.client-logo .brand-logo{height:40px;max-width:190px}
-.client-section{scroll-margin-top:64px}
+.client-nav-inner{height:74px}
+.client-logo .brand-logo{height:48px;max-width:240px}
+.client-section{scroll-margin-top:76px}
 }

@@ -137,9 +137,9 @@
    taller logo simply makes the header taller rather than overflowing it. */
 #topnav .logo img,
 #topnav .logo .brand-logo {
-    height: 52px;
+    height: 72px;
     width: auto;
-    max-width: 300px;
+    max-width: 400px;
     object-fit: contain;
     margin-right: 10px;
     vertical-align: middle;
@@ -148,12 +148,12 @@
 /* Tablet: the menu collapses to a burger at 991px, but the row is still narrow. */
 @media (max-width: 991.98px) {
     #topnav .logo img,
-    #topnav .logo .brand-logo { height: 44px; max-width: 240px; }
+    #topnav .logo .brand-logo { height: 60px; max-width: 320px; }
 }
 
 @media (max-width: 575.98px) {
     #topnav .logo img,
-    #topnav .logo .brand-logo { height: 36px; max-width: 190px; }
+    #topnav .logo .brand-logo { height: 48px; max-width: 240px; }
 }
 
 /* ---------------------------------------------------------------------
