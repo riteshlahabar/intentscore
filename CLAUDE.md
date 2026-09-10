@@ -13,11 +13,18 @@ Redis, no cron dependency for core features. See `README.md` and `ARCHITECTURE.m
 
 ## Session notes — 2026-09-09
 
-- No code changes today; working tree clean, last commits are from 2026-09-08.
-- Added this `CLAUDE.md` as the running log of decisions, conventions and open items.
-- Next steps: end-to-end test of the Instagram worker loop from the live server, and confirm `INSTAGRAM_SOURCE=worker` + `INSTAGRAM_WORKER_TOKEN` are set in production `.env`.
-- Open: no automated tests cover the worker endpoints or the audit services.
-- Open: commit messages are all "instagram" / "for web audit api" — no useful history granularity.
+- Diagnosed empty Instagram audit metrics (engagement rate, avg likes/comments, posts per month, last post): the worker's JSON call gets HTTP 429 and falls back to `profileFromPage()`, which returns `edges => []`, so only follower/following/post counts survive.
+- Root cause of the 429: the cookie was only a bare `sessionid` — Instagram throttles signed-in API calls without `csrftoken` and `mid`. Fix is to paste the whole Cookie header from devtools → Network → Request Headers.
+- Decision: the session cookie is stored once in the DB, not in `.env` and `config.php`. New page **Settings → Instagram Session** (`InstagramSettingController`, `admin.settings.instagram` view), admin-only, deliberately separate from Company Profile.
+- `SessionStore` (`app/Services/SmartLink/Instagram/SessionStore.php`) is the single accessor: value encrypted with `Crypt`, `.env` kept as fallback, masked preview + `csrftoken`/`mid` presence reported to the page.
+- Worker gets the cookie from `GET /api/instagram/session`, guarded by the existing `X-Worker-Token`; `worker.php` uses it only when `config.php` leaves `instagram_session_id` empty, cached once per run.
+- `poll_seconds` 300 → 10. Polling hits the portal only, never Instagram, so it does not raise ban risk; it just starts a clicked audit sooner.
+- Decision: no 429 back-off — user explicitly declined it.
+- Rejected: a "run worker.php on my desktop" button. Shared hosting cannot execute anything on a local PC; only a local agent listening on 127.0.0.1 could, and that was not pursued.
+- Committed as `c51e1c0` on `main` (not pushed).
+- Next steps: deploy, `php artisan config:clear`, paste the full cookie on the new page, copy the new `worker.php` to the PC and blank `instagram_session_id` there, then `php worker.php --check <username>` — expect `read via API` and `recent posts read : 12`.
+- Open: nothing was tested against a database — MySQL was not running locally and this PHP has no sqlite driver; only route registration and Blade compilation were verified.
+- Open: still no automated tests for the worker endpoints or audit services.
 
 ## Session notes — 2026-09-08
 

@@ -1,0 +1,240 @@
+/*!
+ * Groomer Loop — Smart Page theme override
+ * ----------------------------------------
+ * Remaps the Landrick vendor blue (#2f55d4) to the Groomer Loop logo palette.
+ *
+ * Scope:  frontend Smart Page designs only (agency, consulting,
+ *         modern-business, social-marketing). The admin panel is untouched.
+ *
+ * Why a separate file: bootstrap.min.css and style.min.css are vendor builds.
+ * Editing them means the retheme is lost the next time the theme is replaced.
+ * This file must load AFTER both, so plain source order wins; !important is
+ * used only where the vendor itself already declared !important.
+ *
+ * Palette sampled directly from public/images/logo.jpeg.
+ */
+
+:root {
+    /* --- brand tokens, sampled from the logo ------------------------- */
+    --gl-primary: #6a3ad6;          /* "L" of Loop        — AA on white  */
+    --gl-primary-rgb: 106, 58, 214;
+    --gl-primary-dark: #5a2fc0;     /* hover                             */
+    --gl-primary-darker: #4d27a6;   /* active / pressed                  */
+    --gl-violet: #9546c3;           /* gradient midpoint                 */
+    --gl-accent: #e35787;           /* "p" of Loop, paw — decorative only */
+    --gl-accent-rgb: 227, 87, 135;
+    --gl-accent-deep: #dc2d69;      /* same hue/sat, darkened to CR 4.54  */
+    --gl-ink: #1e2453;              /* wordmark navy                     */
+    --gl-ink-rgb: 30, 36, 83;
+
+    /* The gradient ends on the DEEP pink, not the logo pink: white body
+       text over #e35787 is only 3.51:1 (fails AA), over #dc2d69 it is
+       4.54:1 and passes. The bright pink stays for non-text accents. */
+    --gl-loop-gradient: linear-gradient(90deg, var(--gl-primary) 0%, var(--gl-violet) 52%, var(--gl-accent-deep) 100%);
+
+    /* --- Bootstrap 5.3 theme variables ------------------------------- */
+    --bs-primary: var(--gl-primary);
+    --bs-primary-rgb: var(--gl-primary-rgb);
+    --bs-primary-text-emphasis: var(--gl-primary-darker);
+    --bs-primary-bg-subtle: #f1ecfc;
+    --bs-primary-border-subtle: #d6c7f5;
+    --bs-link-color: var(--gl-primary);
+    --bs-link-color-rgb: var(--gl-primary-rgb);
+    --bs-link-hover-color: var(--gl-primary-dark);
+    --bs-link-hover-color-rgb: 90, 47, 192;
+}
+
+/* ---------------------------------------------------------------------
+   1. Bootstrap utilities
+   bootstrap.min.css declares .text-primary / .bg-primary twice — the second,
+   later declaration hardcodes #2f55d4 with !important and wins over the
+   variable-driven one. So these need !important here too.
+   ------------------------------------------------------------------ */
+.text-primary { color: var(--gl-primary) !important; }
+.bg-primary { background-color: var(--gl-primary) !important; }
+.border-primary { border-color: var(--gl-primary) !important; }
+
+.text-bg-primary {
+    color: #fff !important;
+    background-color: var(--gl-primary) !important;
+}
+
+/* ---------------------------------------------------------------------
+   2. Buttons — Bootstrap 5.3 drives these entirely through variables,
+   so one block covers hover, active, focus and disabled.
+   ------------------------------------------------------------------ */
+.btn-primary {
+    --bs-btn-bg: var(--gl-primary);
+    --bs-btn-border-color: var(--gl-primary);
+    --bs-btn-hover-bg: var(--gl-primary-dark);
+    --bs-btn-hover-border-color: var(--gl-primary-dark);
+    --bs-btn-active-bg: var(--gl-primary-darker);
+    --bs-btn-active-border-color: var(--gl-primary-darker);
+    --bs-btn-disabled-bg: var(--gl-primary);
+    --bs-btn-disabled-border-color: var(--gl-primary);
+    --bs-btn-focus-shadow-rgb: var(--gl-primary-rgb);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--gl-primary);
+    --bs-btn-border-color: var(--gl-primary);
+    --bs-btn-hover-bg: var(--gl-primary);
+    --bs-btn-hover-border-color: var(--gl-primary);
+    --bs-btn-active-bg: var(--gl-primary-dark);
+    --bs-btn-active-border-color: var(--gl-primary-dark);
+    --bs-btn-focus-shadow-rgb: var(--gl-primary-rgb);
+}
+
+/* Landrick's own soft button — hardcoded rgba(47,85,212,…) with !important */
+.btn-soft-primary {
+    background-color: rgba(var(--gl-primary-rgb), .06) !important;
+    border: 1px solid rgba(var(--gl-primary-rgb), .06) !important;
+    color: var(--gl-primary) !important;
+    box-shadow: 0 3px 5px 0 rgba(var(--gl-primary-rgb), .1);
+}
+
+.btn-soft-primary:hover,
+.btn-soft-primary:focus,
+.btn-soft-primary:active,
+.btn-soft-primary.active {
+    background-color: var(--gl-primary) !important;
+    border-color: var(--gl-primary) !important;
+    color: #fff !important;
+}
+
+/* ---------------------------------------------------------------------
+   3. Sticky navigation
+   ------------------------------------------------------------------ */
+#topnav .navigation-menu > li.active > a,
+#topnav .navigation-menu > li:hover > a,
+#topnav .navigation-menu > li > a:active,
+#topnav .navigation-menu > li > a:hover,
+#topnav.scroll .navigation-menu > li.active > a,
+#topnav.scroll .navigation-menu > li:hover > a,
+#topnav.nav-sticky .navigation-menu.nav-light > li.active > a,
+#topnav.nav-sticky .navigation-menu.nav-light > li:hover > a,
+#topnav .navigation-menu > li .submenu li a:hover,
+#topnav .navigation-menu > li.has-submenu.open > a,
+#topnav .has-submenu.active a,
+#topnav .has-submenu.active .submenu li.active > a {
+    color: var(--gl-primary) !important;
+}
+
+#topnav .has-submenu.active.active .menu-arrow,
+#topnav .navigation-menu > li:hover > .menu-arrow,
+#topnav.scroll .navigation-menu > li.active > .menu-arrow,
+#topnav.scroll .navigation-menu > li:hover > .menu-arrow,
+#topnav.nav-sticky .navigation-menu.nav-light > li.active > .menu-arrow,
+#topnav.nav-sticky .navigation-menu.nav-light > li:hover > .menu-arrow {
+    border-color: var(--gl-primary);
+}
+
+#topnav .navbar-toggle.open span:hover { background-color: var(--gl-primary); }
+
+/* Logo sizing: the wordmark is ~5.3:1, so cap it on small screens
+   instead of letting it push the burger menu off the row. */
+#topnav .logo img {
+    height: 32px;
+    width: auto;
+    max-width: 190px;
+    object-fit: contain;
+}
+
+@media (max-width: 575.98px) {
+    #topnav .logo img { height: 26px; max-width: 150px; }
+}
+
+/* ---------------------------------------------------------------------
+   4. Feature cards  (.features.feature-primary — 15 uses across the designs)
+   ------------------------------------------------------------------ */
+.features.feature-primary .icon { background: rgba(var(--gl-primary-rgb), .1); }
+
+.features.feature-primary .image:before {
+    background: linear-gradient(45deg, transparent, rgba(var(--gl-primary-rgb), .1));
+}
+
+.features.feature-primary .color,
+.features.feature-primary .read-more,
+.features.feature-primary.feature-clean .icons,
+.features.feature-primary.feature-clean .title:hover,
+.features.feature-primary.feature-full-bg .icon-color,
+.features.feature-primary.key-feature .icon,
+.features.feature-primary.course-feature .full-img,
+.features.feature-primary.explore-feature:hover .icons,
+.features.feature-primary.explore-feature:hover .title,
+.features.feature-primary .btn-soft {
+    color: var(--gl-primary) !important;
+}
+
+.features.feature-primary.feature-clean .icons i,
+.features.feature-primary.feature-full-bg:hover {
+    background-color: rgba(var(--gl-primary-rgb), .1);
+}
+
+.features.feature-primary .btn-soft.active,
+.features.feature-primary .btn-soft:active,
+.features.feature-primary .btn-soft:focus,
+.features.feature-primary .btn-soft:hover {
+    background-color: var(--gl-primary) !important;
+    border-color: var(--gl-primary) !important;
+    color: #fff !important;
+}
+
+/* ---------------------------------------------------------------------
+   5. Blog / content cards  (.blog.blog-primary)
+   ------------------------------------------------------------------ */
+.blog.blog-primary .title:hover,
+.blog.blog-primary .readmore:hover,
+.blog.blog-primary .link {
+    color: var(--gl-primary) !important;
+}
+
+.blog.blog-primary .tag { background: var(--gl-primary); }
+
+/* ---------------------------------------------------------------------
+   6. Odds and ends
+   ------------------------------------------------------------------ */
+.back-to-top { background: var(--gl-primary); }
+.back-to-top:hover { background: var(--gl-primary-dark); }
+
+.form-control:focus,
+.form-check-input:focus { border-color: var(--gl-primary); }
+
+.form-check-input:checked {
+    background-color: var(--gl-primary);
+    border-color: var(--gl-primary);
+}
+
+.social-icon li a:hover {
+    background-color: var(--gl-primary);
+    border-color: var(--gl-primary);
+}
+
+.social-icon li a:hover .fea-social { fill: var(--gl-primary); }
+
+::selection {
+    background: rgba(var(--gl-primary-rgb), .9);
+    color: #fff;
+}
+
+/* Gradient panels pick up the logo's Loop sweep rather than a flat tint.
+   .bg-primary.bg-gradient is used on the consulting and social-marketing
+   designs; the accent pink is decorative here, never small text. */
+.bg-primary.bg-gradient {
+    background-image: none !important;
+    background: var(--gl-loop-gradient) !important;
+}
+
+/* Bootstrap's .text-white-50 over this gradient is 1.9–2.8:1 — unreadable.
+   Inside a gradient panel, body copy goes to full white. */
+.bg-primary.bg-gradient .text-white-50,
+.bg-primary.bg-gradient .text-muted {
+    color: #fff !important;
+    opacity: .92;
+}
+
+/* Dark footers currently print the company NAME as text, not the logo, so
+   no image rule is needed here. If the footer is later switched to the
+   knockout wordmark (logo-groomerloop-white.png), add:
+       .footer .logo-footer img { height:34px; width:auto; max-width:200px; }
+   The knockout asset is already in public/images/ ready for that. */
