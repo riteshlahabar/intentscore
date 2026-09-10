@@ -131,17 +131,29 @@
 
 #topnav .navbar-toggle.open span:hover { background-color: var(--gl-primary); }
 
-/* Logo sizing: the wordmark is ~5.3:1, so cap it on small screens
-   instead of letting it push the burger menu off the row. */
-#topnav .logo img {
-    height: 32px;
+/* Logo sizing. The wordmark is ~5.3:1, so height alone would let it run into the
+   menu — max-width caps it and object-fit keeps the aspect ratio. #topnav has no
+   fixed height (nav-overrides.css gives the container 16px padding instead), so a
+   taller logo simply makes the header taller rather than overflowing it. */
+#topnav .logo img,
+#topnav .logo .brand-logo {
+    height: 52px;
     width: auto;
-    max-width: 190px;
+    max-width: 300px;
     object-fit: contain;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* Tablet: the menu collapses to a burger at 991px, but the row is still narrow. */
+@media (max-width: 991.98px) {
+    #topnav .logo img,
+    #topnav .logo .brand-logo { height: 44px; max-width: 240px; }
 }
 
 @media (max-width: 575.98px) {
-    #topnav .logo img { height: 26px; max-width: 150px; }
+    #topnav .logo img,
+    #topnav .logo .brand-logo { height: 36px; max-width: 190px; }
 }
 
 /* ---------------------------------------------------------------------

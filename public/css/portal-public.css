@@ -28,3 +28,16 @@
 .calc-out{margin-top:16px;border-top:1px solid var(--line);padding-top:4px}
 .calc-out .detail-row strong{color:var(--g);font-size:15px}
 @media(max-width:600px){.calc{padding:16px}.calc-inputs{grid-template-columns:1fr}}
+
+/* Brand logo in the sticky header.
+   .client-nav-inner has a fixed height, so the bar has to grow with the logo or the
+   image gets clipped; .client-section's scroll-margin-top follows it, otherwise an
+   anchored section lands underneath the sticky bar. */
+.client-nav-inner{height:78px}
+.client-logo .brand-logo{height:52px;width:auto;max-width:300px;object-fit:contain;display:block}
+.client-section{scroll-margin-top:80px}
+@media(max-width:600px){
+.client-nav-inner{height:62px}
+.client-logo .brand-logo{height:40px;max-width:190px}
+.client-section{scroll-margin-top:64px}
+}

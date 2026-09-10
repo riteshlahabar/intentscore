@@ -28,7 +28,7 @@
     <div class="client-nav-inner">
         <a class="client-logo" href="#top">
             @if(!empty($settings['company_logo']))
-                <img src="{{ asset($settings['company_logo']) }}" alt="" style="height:30px">
+                <img src="{{ asset($settings['company_logo']) }}" alt="" class="brand-logo">
             @else
                 <span class="client-logo-mark">{{ strtoupper(substr($company, 0, 1)) }}</span>
             @endif
