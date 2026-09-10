@@ -18,7 +18,7 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="robots" content="noindex,nofollow">
 <title>{{ $heading }}</title>
-<link rel="icon" href="{{ asset('images/favicon.svg') }}" type="image/svg+xml">
+<link rel="icon" href="@assetv('images/Groomer-Favicon.png')" type="image/png">
 <link rel="stylesheet" href="{{ asset('admin-assets/css/remixicon.css') }}">
 <link rel="stylesheet" href="@assetv('css/portal-public.css')">
 </head>

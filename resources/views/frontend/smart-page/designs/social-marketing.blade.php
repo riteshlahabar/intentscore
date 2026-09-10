@@ -34,7 +34,7 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="robots" content="noindex,nofollow">
 <title>{{ $heading }}</title>
-<link rel="icon" href="{{ asset('images/favicon.svg') }}" type="image/svg+xml">
+<link rel="icon" href="@assetv('images/Groomer-Favicon.png')" type="image/png">
 <link href="{{ asset('smart-templates/assets/libs/tiny-slider/tiny-slider.css') }}" rel="stylesheet">
 <link href="{{ asset('smart-templates/assets/libs/tobii/css/tobii.min.css') }}" rel="stylesheet">
 <link href="{{ asset('smart-templates/assets/css/bootstrap.min.css') }}" rel="stylesheet">
