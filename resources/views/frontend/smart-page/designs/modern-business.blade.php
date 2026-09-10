@@ -40,8 +40,8 @@
 <link href="{{ asset('smart-templates/assets/libs/@mdi/font/css/materialdesignicons.min.css') }}" rel="stylesheet">
 <link href="{{ asset('smart-templates/assets/libs/@iconscout/unicons/css/line.css') }}" rel="stylesheet">
 <link href="{{ asset('smart-templates/assets/css/style.min.css') }}" rel="stylesheet">
-<link href="{{ asset('smart-templates/assets/css/nav-overrides.css') }}" rel="stylesheet">
-<link href="{{ asset('smart-templates/assets/css/groomer-loop-theme.css') }}" rel="stylesheet">
+<link href="@assetv('smart-templates/assets/css/nav-overrides.css')" rel="stylesheet">
+<link href="@assetv('smart-templates/assets/css/groomer-loop-theme.css')" rel="stylesheet">
 </head>
 <body id="smart-page" data-track-url="{{ $trackUrl }}">
 
@@ -358,7 +358,7 @@
 <script src="{{ asset('smart-templates/assets/js/plugins.init.js') }}"></script>
 <script src="{{ asset('smart-templates/assets/js/app.js') }}"></script>
 @unless($preview)
-<script src="{{ asset('js/smart-page-tracker.js') }}"></script>
+<script src="@assetv('js/smart-page-tracker.js')"></script>
 @endunless
 @include('frontend.smart-page.partials.free-tools-script')
 </body>

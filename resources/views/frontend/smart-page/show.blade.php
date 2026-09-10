@@ -20,7 +20,7 @@
 <title>{{ $heading }}</title>
 <link rel="icon" href="{{ asset('images/favicon.svg') }}" type="image/svg+xml">
 <link rel="stylesheet" href="{{ asset('admin-assets/css/remixicon.css') }}">
-<link rel="stylesheet" href="{{ asset('css/portal-public.css') }}">
+<link rel="stylesheet" href="@assetv('css/portal-public.css')">
 </head>
 <body class="client-page" id="smart-page" data-track-url="{{ route('smart.track', $page->smartLink) }}">
 
@@ -242,7 +242,7 @@
     {{ $settings['privacy_notice'] ?? 'This page records which sections you view and which tools you use, so we can follow up with what is actually relevant to you.' }}
 </div>
 
-<script src="{{ asset('js/smart-page-tracker.js') }}"></script>
+<script src="@assetv('js/smart-page-tracker.js')"></script>
 <script>
 (function () {
     var money = function (value) {
