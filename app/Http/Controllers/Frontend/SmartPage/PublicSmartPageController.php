@@ -8,14 +8,27 @@ use App\Models\SmartLink\SmartLinkModel;
 use App\Models\SmartLink\SmartPageTemplate;
 use App\Services\SmartLink\SmartTrackingService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PublicSmartPageController extends Controller
 {
-    public function show(string $slug): View
+    /**
+     * Public Smart Page at /{link}/{name}.
+     *
+     * The name segment is cosmetic — it is not used to find the record. If it does not
+     * match the prospect's current business name (renamed prospect, hand-edited URL,
+     * link shared after a rename) the visitor is sent to the canonical address instead
+     * of being shown a 404, so links already in a client's inbox keep working.
+     */
+    public function show(SmartLinkModel $link, string $name): View|RedirectResponse
     {
-        $page = $this->resolve($slug);
+        $page = $this->pageFor($link);
+
+        if ($name !== $link->nameSlug()) {
+            return redirect()->to($link->publicUrl(), 301);
+        }
 
         $design = $page->template?->design;
         $view = in_array($design, SmartPageTemplate::DESIGNS, true)
@@ -32,9 +45,20 @@ class PublicSmartPageController extends Controller
         ]);
     }
 
-    public function track(Request $request, string $slug, SmartTrackingService $tracking): JsonResponse
+    /**
+     * Legacy /s/{slug} address, kept because links in that form are already with
+     * clients. Redirects permanently to the /{id}/{name} form.
+     */
+    public function legacy(string $slug): RedirectResponse
     {
-        $page = $this->resolve($slug);
+        $link = SmartLinkModel::with('prospect')->where('slug', $slug)->firstOrFail();
+
+        return redirect()->to($link->publicUrl(), 301);
+    }
+
+    public function track(Request $request, SmartLinkModel $link, SmartTrackingService $tracking): JsonResponse
+    {
+        $page = $this->pageFor($link);
 
         $data = $request->validate([
             'session_id' => ['required', 'uuid'],
@@ -50,10 +74,8 @@ class PublicSmartPageController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    private function resolve(string $slug)
+    private function pageFor(SmartLinkModel $link)
     {
-        $link = SmartLinkModel::where('slug', $slug)->firstOrFail();
-
         abort_unless($link->isActive(), 410, 'This link is no longer active.');
 
         $page = $link->smartPage()->with(['prospect', 'sections', 'template'])->firstOrFail();

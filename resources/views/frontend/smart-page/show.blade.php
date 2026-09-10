@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="{{ asset('admin-assets/css/remixicon.css') }}">
 <link rel="stylesheet" href="{{ asset('css/portal-public.css') }}">
 </head>
-<body class="client-page" id="smart-page" data-track-url="{{ route('smart.track', $page->smartLink->slug) }}">
+<body class="client-page" id="smart-page" data-track-url="{{ route('smart.track', $page->smartLink) }}">
 
 <nav class="client-nav">
     <div class="client-nav-inner">

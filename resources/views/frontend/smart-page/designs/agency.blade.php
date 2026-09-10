@@ -23,7 +23,7 @@
     $benefitIcons = ['check-circle', 'trending-up', 'shield', 'star', 'thumbs-up', 'target', 'zap', 'users', 'award'];
     $auditIcons = ['observation' => 'search', 'problem' => 'alert-triangle', 'recommendation' => 'zap' ];
     $preview = $preview ?? false;
-    $trackUrl = $preview ? '#' : route('smart.track', $page->smartLink->slug);
+    $trackUrl = $preview ? '#' : route('smart.track', $page->smartLink);
 @endphp
 <!DOCTYPE html>
 <html lang="en">

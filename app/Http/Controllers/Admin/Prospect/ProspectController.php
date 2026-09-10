@@ -37,7 +37,7 @@ class ProspectController extends Controller
         $sort = $request->get('sort', 'last_activity');
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
 
-        $query = Prospect::with(['intentScore', 'smartLink', 'salesperson'])
+        $query = Prospect::with(['intentScore', 'smartLink.prospect', 'salesperson'])
             ->withCount('visits')
             ->withMax('events as last_activity_at', 'occurred_at');
 
@@ -122,7 +122,7 @@ class ProspectController extends Controller
     {
         $this->authorize('view', $prospect);
 
-        $prospect->load(['intentScore', 'smartLink', 'smartPage.sections', 'salesperson']);
+        $prospect->load(['intentScore', 'smartLink.prospect', 'smartPage.sections', 'salesperson']);
 
         $this->markAlertSeen($prospect);
 

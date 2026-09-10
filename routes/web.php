@@ -36,9 +36,7 @@ Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:6
 | Public Smart Page + the prospect/intent workflow described in the scope PDF.
 */
 
-Route::get('/s/{slug}', [PublicSmartPageController::class, 'show'])->name('smart.page');
-Route::post('/s/{slug}/track', [PublicSmartPageController::class, 'track'])
-    ->middleware('throttle:240,1')->name('smart.track');
+Route::get('/s/{slug}', [PublicSmartPageController::class, 'legacy'])->name('smart.page.legacy');
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,salesperson', 'throttle:200,1'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -79,3 +77,19 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,salesper
         Route::put('instagram-settings', [InstagramSettingController::class, 'update'])->name('instagram.settings.update');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public Smart Page — /{link}/{name}
+|--------------------------------------------------------------------------
+| Registered LAST and on purpose. A two-segment route at the root would otherwise
+| swallow every other URL, so it sits after the admin group and the id segment is
+| constrained to digits: "admin", "login" and friends can never match it. Only the
+| id identifies the page; {name} is cosmetic and a stale one is redirected, which
+| is what lets two prospects share a business name without sharing a URL.
+*/
+Route::get('/{link}/{name}', [PublicSmartPageController::class, 'show'])
+    ->whereNumber('link')->name('smart.page');
+
+Route::post('/{link}/track', [PublicSmartPageController::class, 'track'])
+    ->whereNumber('link')->middleware('throttle:240,1')->name('smart.track');

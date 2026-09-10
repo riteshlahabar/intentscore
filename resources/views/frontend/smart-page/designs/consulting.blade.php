@@ -23,7 +23,7 @@
     $benefitIcons = ['uil-lightbulb-alt', 'uil-usd-circle', 'uil-analytics', 'uil-invoice'];
     $auditIcons = ['observation' => 'search', 'problem' => 'alert-triangle', 'recommendation' => 'zap'];
     $preview = $preview ?? false;
-    $trackUrl = $preview ? '#' : route('smart.track', $page->smartLink->slug);
+    $trackUrl = $preview ? '#' : route('smart.track', $page->smartLink);
 @endphp
 <!DOCTYPE html>
 <html lang="en">
