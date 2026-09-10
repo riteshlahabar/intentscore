@@ -75,22 +75,30 @@ function check(array $config, string $username): void
 
     say("checking @{$username}");
 
-    $route = 'API';
+    $route = 'profile page';
+
+    /*
+     * ENGAGEMENT FETCH DISABLED.
+     *
+     * instagramProfile() calls Instagram's JSON endpoint, which is the only source of
+     * per-post likes and comments - and therefore of the engagement and consistency
+     * scores. Instagram answers it with HTTP 429 for this account, so every audit spent
+     * a blocked request before falling back anyway. Reading the profile page directly
+     * skips that, and profile information is never blocked.
+     *
+     * To bring engagement scoring back, restore the commented block below.
+     */
+    // try {
+    //     $user = instagramProfile($config, $username);
+    // } catch (TransientError $e) {
+    //     say('  API: '.$e->getMessage());
+    //     say('  trying the profile page instead …');
+    //     $route = 'profile page';
+    //     $user = profileFromPage($username);
+    // }
 
     try {
-        $user = instagramProfile($config, $username);
-    } catch (TransientError $e) {
-        say('  API: '.$e->getMessage());
-        say('  trying the profile page instead …');
-        $route = 'profile page';
-
-        try {
-            $user = profileFromPage($username);
-        } catch (Throwable $inner) {
-            say('  FAILED: '.$inner->getMessage());
-
-            return;
-        }
+        $user = profileFromPage($username);
     } catch (Throwable $e) {
         say('  FAILED: '.$e->getMessage());
 
@@ -151,29 +159,25 @@ function handle(array $config, int $id, string $username): void
 {
     say("  @{$username} …");
 
+    /*
+     * ENGAGEMENT FETCH DISABLED - see the note in checkOne(). The JSON endpoint is the
+     * only source of per-post engagement and Instagram returns 429 for it, so the
+     * profile page is read directly. The counts and the profile arrive; engagement and
+     * consistency stay unscored.
+     */
+    // try {
+    //     $user = instagramProfile($config, $username);
+    // } catch (TransientError $e) {
+    //     say('  '.$e->getMessage().' - reading the profile page instead');
+    //     $user = profileFromPage($username);
+    //     say('  page fallback worked (no per-post engagement data)');
+    // }
+
     try {
-        $user = instagramProfile($config, $username);
-    } catch (TransientError $e) {
-        /*
-         * Instagram throttles its JSON endpoint long before it stops rendering the
-         * profile page, and that page's meta description carries the follower, following
-         * and post counts. Falling back to it turns a throttle into a partial audit
-         * instead of nothing - the counts and the profile arrive, only the per-post
-         * engagement is missing.
-         */
-        say('  '.$e->getMessage().' - reading the profile page instead');
-
-        try {
-            $user = profileFromPage($username);
-            say('  page fallback worked (no per-post engagement data)');
-        } catch (Throwable $inner) {
-            say('  skipped: '.$inner->getMessage().' (stays queued, will retry next run)');
-
-            return;
-        }
+        $user = profileFromPage($username);
+        say('  profile info read (engagement fetch is switched off)');
     } catch (Throwable $e) {
-        say('  failed: '.$e->getMessage());
-        postResult($config, ['id' => $id, 'error' => $e->getMessage()]);
+        say('  skipped: '.$e->getMessage().' (stays queued, will retry next run)');
 
         return;
     }

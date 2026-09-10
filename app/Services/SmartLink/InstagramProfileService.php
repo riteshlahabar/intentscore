@@ -137,10 +137,10 @@ class InstagramProfileService
             'error_message' => $limited
                 ? 'Instagram limited the detailed request, so only the public counts were read. Engagement and posting consistency need a re-run.'
                 : null,
-            'full_name' => $user['full_name'] ?: null,
+            'full_name' => ($user['full_name'] ?? null) ?: null,
             'category' => $user['category_name'] ?? $user['business_category_name'] ?? null,
-            'biography' => $user['biography'] ?: null,
-            'external_url' => $user['external_url'] ?: null,
+            'biography' => ($user['biography'] ?? null) ?: null,
+            'external_url' => ($user['external_url'] ?? null) ?: null,
             'business_address' => $this->address($user),
             'profile_pic' => $picture ?: $this->picture($user['profile_pic_url_hd'] ?? $user['profile_pic_url'] ?? null),
             'is_verified' => (bool) ($user['is_verified'] ?? false),
