@@ -27,12 +27,7 @@
 <nav class="client-nav">
     <div class="client-nav-inner">
         <a class="client-logo" href="#top">
-            @if(!empty($settings['company_logo']))
-                <img src="{{ asset($settings['company_logo']) }}" alt="" class="brand-logo">
-            @else
-                <span class="client-logo-mark">{{ strtoupper(substr($company, 0, 1)) }}</span>
-            @endif
-            {{ $company }}
+            @include('frontend.smart-page.partials.brand', ['style' => 'client'])
         </a>
         <div class="client-nav-links">
             @foreach($ordered as $s)

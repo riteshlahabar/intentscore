@@ -49,10 +49,7 @@
 <header id="topnav" class="defaultscroll sticky">
     <div class="container">
         <a class="logo" href="#home">
-            @if(!empty($settings['company_logo']))
-                <img src="{{ asset($settings['company_logo']) }}" alt="" class="brand-logo">
-            @endif
-            <span class="h4 text-primary fw-bold mb-0">{{ $company }}</span>
+            @include('frontend.smart-page.partials.brand', ['style' => 'topnav'])
         </a>
 
         <div class="menu-extras">

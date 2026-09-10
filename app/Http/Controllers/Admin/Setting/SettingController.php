@@ -33,6 +33,8 @@ class SettingController extends Controller
             'company_address' => ['nullable', 'string', 'max:1000'],
             'company_about' => ['nullable', 'string', 'max:5000'],
             'privacy_notice' => ['nullable', 'string', 'max:10000'],
+            // Smart Page header only; a missing row reads as 'both' at render time.
+            'header_display' => ['required', 'in:logo,name,both'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
         ]);
 
