@@ -24,7 +24,7 @@
         #{{ $psiUid }}-mobile:checked ~ .psi-audit .psi-panel-mobile,
         #{{ $psiUid }}-desktop:checked ~ .psi-audit .psi-panel-desktop{display:grid}
         #{{ $psiUid }}-mobile:checked ~ .psi-audit .psi-tabs label[for="{{ $psiUid }}-mobile"],
-        #{{ $psiUid }}-desktop:checked ~ .psi-audit .psi-tabs label[for="{{ $psiUid }}-desktop"]{color:#ee7b1d;border-color:#ee7b1d}
+        #{{ $psiUid }}-desktop:checked ~ .psi-audit .psi-tabs label[for="{{ $psiUid }}-desktop"]{color:#6a3ad6;border-color:#6a3ad6}
         @media(max-width:520px){.psi-panel{grid-template-columns:1fr}.psi-shot{width:100%}.psi-panel-mobile .psi-shot{width:auto;max-height:220px}}
     </style>
     @if($psiCards->has('mobile'))<input type="radio" name="{{ $psiUid }}" id="{{ $psiUid }}-mobile" hidden checked>@endif
