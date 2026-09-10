@@ -255,3 +255,27 @@
    knockout wordmark (logo-groomerloop-white.png), add:
        .footer .logo-footer img { height:34px; width:auto; max-width:200px; }
    The knockout asset is already in public/images/ ready for that. */
+
+/* ---------------------------------------------------------------------
+   7. Section rhythm
+   Landrick ships .section{padding:100px 0}, which is sized for a marketing site
+   with few, long sections. A Smart Page stacks six to eight short ones, so that
+   much air reads as a gap rather than as separation, and the client has to scroll
+   past empty space to reach the next point.
+
+   Below the heading the gap is doubled up in the markup — .section-title carries
+   .mb-4.pb-2 (32px) and the <h4> inside carries its own .mb-4 (24px), for 56px.
+   Dropping the h4's own margin leaves the wrapper's 32px, which is enough.
+
+   :last-child is what keeps this safe. In the audit sections the heading is alone
+   in the wrapper, so its margin is pure duplication; in the intro and free-tools
+   sections a <p> follows it inside the same wrapper, and there the 24px is the only
+   thing separating heading from paragraph. This rule touches only the first case.
+   ------------------------------------------------------------------ */
+.section { padding: 56px 0; }
+
+@media (max-width: 768px) {
+    .section { padding: 40px 0; }
+}
+
+.section .section-title.mb-4 > .title.mb-4:last-child { margin-bottom: 0 !important; }

@@ -41,3 +41,10 @@
 .client-logo .brand-logo{height:calc(var(--brand-logo-h,72px) * .65)}
 .client-section{scroll-margin-top:calc(var(--brand-logo-h,72px) * .65 + 28px)}
 }
+
+/* Section rhythm — matches the tightening applied to the four Landrick designs.
+   72px of top padding is a lot in front of a short section, and a Smart Page
+   stacks several of them. The heading's own margin-bottom is already modest here
+   (.section-head{margin-bottom:30px}), so only the section padding changes. */
+.client-section{padding:52px 18px}
+@media(max-width:600px){.client-section{padding:38px 15px}}
