@@ -272,10 +272,10 @@
    sections a <p> follows it inside the same wrapper, and there the 24px is the only
    thing separating heading from paragraph. This rule touches only the first case.
    ------------------------------------------------------------------ */
-.section { padding: 46px 0; }
+.section { padding: 38px 0; }
 
 @media (max-width: 768px) {
-    .section { padding: 34px 0; }
+    .section { padding: 28px 0; }
 }
 
 .section .section-title.mb-4 > .title.mb-4:last-child { margin-bottom: 0 !important; }
