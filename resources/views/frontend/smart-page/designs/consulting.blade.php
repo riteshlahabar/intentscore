@@ -42,6 +42,7 @@
 <link href="{{ asset('smart-templates/assets/css/style.min.css') }}" rel="stylesheet">
 <link href="@assetv('smart-templates/assets/css/nav-overrides.css')" rel="stylesheet">
 <link href="@assetv('smart-templates/assets/css/groomer-loop-theme.css')" rel="stylesheet">
+@include('frontend.smart-page.partials.brand-vars')
 </head>
 <body id="smart-page" data-track-url="{{ $trackUrl }}">
 

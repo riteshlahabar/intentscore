@@ -35,6 +35,9 @@ class SettingController extends Controller
             'privacy_notice' => ['nullable', 'string', 'max:10000'],
             // Smart Page header only; a missing row reads as 'both' at render time.
             'header_display' => ['required', 'in:logo,name,both'],
+            // Smart Page header logo height in px. Tablet and mobile scale off this one
+            // value, so the field stays a single number.
+            'header_logo_height' => ['required', 'integer', 'min:24', 'max:160'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
         ]);
 

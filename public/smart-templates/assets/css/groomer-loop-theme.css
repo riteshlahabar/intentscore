@@ -137,23 +137,28 @@
    taller logo simply makes the header taller rather than overflowing it. */
 #topnav .logo img,
 #topnav .logo .brand-logo {
-    height: 72px;
+    /* --brand-logo-h comes from Settings via partials/brand-vars; the fallback keeps
+       this file usable on its own. max-width is derived from the height rather than
+       fixed, so a wide wordmark keeps its full height instead of being capped: 6:1
+       clears the ~5.3:1 Groomer Loop mark with room to spare. */
+    height: var(--brand-logo-h, 72px);
     width: auto;
-    max-width: 400px;
+    max-width: calc(var(--brand-logo-h, 72px) * 6);
     object-fit: contain;
     margin-right: 10px;
     vertical-align: middle;
 }
 
-/* Tablet: the menu collapses to a burger at 991px, but the row is still narrow. */
+/* Tablet: the menu collapses to a burger at 991px, but the row is still narrow, so
+   the configured height scales down rather than being set separately. */
 @media (max-width: 991.98px) {
     #topnav .logo img,
-    #topnav .logo .brand-logo { height: 60px; max-width: 320px; }
+    #topnav .logo .brand-logo { height: calc(var(--brand-logo-h, 72px) * .85); }
 }
 
 @media (max-width: 575.98px) {
     #topnav .logo img,
-    #topnav .logo .brand-logo { height: 48px; max-width: 240px; }
+    #topnav .logo .brand-logo { height: calc(var(--brand-logo-h, 72px) * .65); }
 }
 
 /* ---------------------------------------------------------------------

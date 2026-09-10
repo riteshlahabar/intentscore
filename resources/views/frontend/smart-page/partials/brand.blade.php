@@ -2,7 +2,8 @@
     Smart Page header brand — logo, company name, or both.
 
     Driven by the `header_display` setting (Settings -> Company Settings). The rule
-    lives here rather than in each design so all five headers stay in step.
+    lives here rather than in each design so all five headers stay in step. Sizing is
+    not here: it comes from --brand-logo-h, published by partials/brand-vars.
 
     $style picks the markup: 'topnav' for the four Landrick designs, 'client' for the
     fallback show.blade.php, which has its own classes and an initial-letter mark.

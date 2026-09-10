@@ -21,6 +21,7 @@
 <link rel="icon" href="@assetv('images/Groomer-Favicon.png')" type="image/png">
 <link rel="stylesheet" href="{{ asset('admin-assets/css/remixicon.css') }}">
 <link rel="stylesheet" href="@assetv('css/portal-public.css')">
+@include('frontend.smart-page.partials.brand-vars')
 </head>
 <body class="client-page" id="smart-page" data-track-url="{{ route('smart.track', $page->smartLink) }}">
 
