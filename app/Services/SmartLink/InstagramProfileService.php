@@ -118,8 +118,25 @@ class InstagramProfileService
         $engagement = $this->engagement($posts, $followers);
         $cadence = $this->cadence($posts);
 
+        // A read that returned no posts is not a complete audit, even though the counts
+        // came back. Instagram answers the detailed request with HTTP 429 when it has
+        // limited the account, and the worker then falls back to scraping the profile
+        // page, which carries follower/following/post counts but no per-post data. That
+        // used to be saved as 'completed' with a null error, so a throttled audit was
+        // indistinguishable from a healthy one in the database and every engagement
+        // figure silently read as a dash.
+        //
+        // A private account is a different case and stays 'completed': there are no
+        // posts to read, the audit is as complete as it will ever be, and re-running it
+        // would change nothing.
+        $private = (bool) ($user['is_private'] ?? false);
+        $limited = ! $private && $posts === [] && $followers > 0;
+
         $profile = [
-            'status' => 'completed',
+            'status' => $limited ? 'partial' : 'completed',
+            'error_message' => $limited
+                ? 'Instagram limited the detailed request, so only the public counts were read. Engagement and posting consistency need a re-run.'
+                : null,
             'full_name' => $user['full_name'] ?: null,
             'category' => $user['category_name'] ?? $user['business_category_name'] ?? null,
             'biography' => $user['biography'] ?: null,

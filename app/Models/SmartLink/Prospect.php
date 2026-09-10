@@ -75,10 +75,13 @@ class Prospect extends Model
      * The newest audit that actually has something to show. A queued audit deliberately
      * does not count: while the worker PC is fetching a refresh, the card should keep
      * showing the numbers from last time rather than emptying itself.
+     *
+     * 'partial' counts because it does have something to show - follower, following and
+     * post counts - it just has no engagement figures, and the card says so.
      */
     public function latestInstagramAudit(): ?InstagramAudit
     {
-        return $this->instagramAudits()->whereIn('status', ['completed', 'failed'])->latest('id')->first();
+        return $this->instagramAudits()->whereIn('status', ['completed', 'partial', 'failed'])->latest('id')->first();
     }
 
     public function pendingInstagramAudit(): ?InstagramAudit
