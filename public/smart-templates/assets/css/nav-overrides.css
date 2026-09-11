@@ -3,9 +3,70 @@
 
 #topnav{transition:all .005s ease}
 
-/* Landrick sizes the menu row at 74px (25px padding above and below a 24px line,
-   with min-height:62px behind it) and pins .buy-button's line-height to the same
-   74px so the CTA lines up with the links. Both are cut to 51px together - moving
-   one alone would leave the button sitting off the link baseline. */
+/* ---------------------------------------------------------------------
+   Header row height — the one number the logo, the links and the CTA all
+   share.
+
+   Landrick lays the header out with three floats (.logo left, .buy-button
+   and #navigation right). Floats only share a TOP edge, so three boxes of
+   different heights never line up: with a 72px logo the link row and the
+   CTA measured 10.7px above the logo's centre, and the gap widened to
+   24.5px at a 100px logo. Giving all three the same height and centring
+   their contents inside it is what puts them on one line; it also keeps
+   working when Settings changes the logo height, which a fixed 51px could
+   not.
+
+   --gl-nav-row follows the configured logo height. The 56px floor is for
+   the small end of the Settings range: the CTA button is 42px tall on its
+   own, so a 24px row would have the button sticking out of the header.
+   ------------------------------------------------------------------ */
+:root{--gl-nav-row:max(56px, var(--brand-logo-h,72px))}
+
+/* Landrick's global `.logo` rule is `line-height:68px;padding:0 0 6px`, and
+   that 68px strut - not the image - is what decided where the logo sat, which
+   is why a 40px logo and a 72px one both centred at the same 44.2px. Flex
+   replaces the strut with real centring. The rule also covers the company-name
+   <span> that partials/brand can emit next to (or instead of) the image. */
+#topnav .logo{display:flex;align-items:center;height:var(--gl-nav-row);line-height:normal;padding:0}
+
+/* The stacked mobile menu keeps its own compact rhythm. This rule stays ahead
+   of the desktop block below: both have the same specificity, so source order
+   is what lets the media query win above 992px. */
 #topnav .navigation-menu>li>a{padding-top:13px;padding-bottom:14px;min-height:51px}
-#topnav .buy-button{line-height:51px}
+
+/* Links: symmetric padding around Landrick's 24px line box centres the text in
+   the row. */
+@media (min-width:992px){
+    #topnav .navigation-menu>li>a{
+        padding-top:calc((var(--gl-nav-row) - 24px) / 2);
+        padding-bottom:calc((var(--gl-nav-row) - 24px) / 2);
+        min-height:var(--gl-nav-row);
+    }
+}
+
+/* Landrick centres the CTA with `line-height:74px`, which only works because an
+   inline-block button happens to sit near the middle of that line box. Flex is
+   exact, and it tracks --gl-nav-row. */
+#topnav .buy-button{display:flex;align-items:center;height:var(--gl-nav-row);line-height:normal}
+
+@media (max-width:991.98px){
+    /* Matches the .85 logo scaling in groomer-loop-theme.css. */
+    :root{--gl-nav-row:max(56px, calc(var(--brand-logo-h,72px) * .85))}
+
+    /* The burger is a 25x18 icon inside 30px/26px margins - Landrick's 74px
+       rhythm again. Centring it in the row keeps it level with the logo. */
+    #topnav .navbar-toggle .lines{
+        margin-top:calc((var(--gl-nav-row) - 18px) / 2);
+        margin-bottom:calc((var(--gl-nav-row) - 18px) / 2);
+    }
+
+    /* The dropdown panel is absolutely positioned at a hard-coded top:74px, so
+       it overlapped or floated clear of the header as soon as the header height
+       stopped being 74px. 16px is the container's 8px top + 8px bottom padding. */
+    #navigation{top:calc(var(--gl-nav-row) + 16px)}
+}
+
+@media (max-width:575.98px){
+    /* Matches the .65 logo scaling in groomer-loop-theme.css. */
+    :root{--gl-nav-row:max(56px, calc(var(--brand-logo-h,72px) * .65))}
+}
