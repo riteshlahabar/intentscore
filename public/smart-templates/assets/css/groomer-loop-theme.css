@@ -279,3 +279,10 @@
 }
 
 .section .section-title.mb-4 > .title.mb-4:last-child { margin-bottom: 0 !important; }
+
+/* The wrapper's own gap, left at Bootstrap's .mb-4.pb-2 (24px + 8px) when the h4's
+   duplicate margin was removed above, still read as too much air above the content.
+   Cut to a flat 16px. Set on the wrapper rather than on the heading so it applies
+   whether or not a <p> follows the heading inside it — the :last-child rule above
+   only governs the heading's own margin, which stays intact where that <p> exists. */
+.section .section-title.mb-4.pb-2 { margin-bottom: 16px !important; padding-bottom: 0 !important; }
