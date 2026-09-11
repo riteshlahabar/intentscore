@@ -77,3 +77,18 @@
     /* Matches the .65 logo scaling in groomer-loop-theme.css. */
     :root{--gl-nav-row:max(56px, calc(var(--brand-logo-h,72px) * .65))}
 }
+
+/* The "More" submenu caret is absolutely positioned inside its <li> at a hard-coded
+   top:30px (33px on hover), a number tuned for Landrick's old 74px row - so it slides
+   off the word as soon as the row height changes. Centring it on --gl-nav-row keeps it
+   level with the label at any logo height. 8px is the caret's own box: 3px of padding
+   each side plus the 2px border; rotate(45deg) does not change that layout box, so its
+   centre stays at top + 4px. The hover and active selectors are repeated because
+   Landrick sets those with !important. */
+@media (min-width:992px){
+    #topnav .navigation-menu>.has-submenu>.menu-arrow,
+    #topnav .navigation-menu>.has-submenu.active>.menu-arrow,
+    #topnav .navigation-menu>.has-submenu:hover>.menu-arrow{
+        top:calc((var(--gl-nav-row) - 8px) / 2)!important;
+    }
+}
