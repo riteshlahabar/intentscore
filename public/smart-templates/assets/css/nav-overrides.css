@@ -78,17 +78,69 @@
     :root{--gl-nav-row:max(56px, calc(var(--brand-logo-h,72px) * .65))}
 }
 
+/* ---------------------------------------------------------------------
+   Menu centred on the BAR, not on the gap between the logo and the CTA.
+
+   Landrick lays the header out with floats: .logo left, .buy-button right,
+   and #navigation as a plain block. The <ul> inside it is a flex container,
+   which is a formatting-context root, so the browser squeezes it into the
+   band left over between the two floats - and `justify-content:center` then
+   centres it in THAT band. The result is off the bar's centre by roughly
+   (logo width - CTA width) / 2, which is large here because the logo box can
+   also carry the company name.
+
+   Flex fixes it by making the two sides equal rails: `flex:1 1 0` gives the
+   logo and the CTA the same width whatever their contents, so the menu
+   between them lands on the true centre. min-width is deliberately left at
+   `auto` - a rail then floors at its own content width instead of letting a
+   long menu crush the logo, so a cramped header degrades to "slightly off
+   centre" rather than to overlapping text.
+
+   `order` is needed because the DOM order is logo, .menu-extras, .buy-button,
+   #navigation: float:right reversed the last two visually, flex does not.
+   .menu-extras only holds the burger, which Landrick already hides above
+   992px, so it is taken out of the row entirely - a zero-width flex item
+   still gets a `gap` on each side and would shift the centre by half of it.
+   ------------------------------------------------------------------ */
+@media (min-width:992px){
+    #topnav .container{display:flex;align-items:center;gap:15px}
+    #topnav .logo{order:1;flex:1 1 0}
+    #topnav #navigation{order:2;flex:0 0 auto}
+    #topnav .buy-button{order:3;flex:1 1 0;justify-content:flex-end;margin-left:0;padding-left:0}
+    #topnav .menu-extras{display:none}
+
+    /* A page whose template has no CTA section has no right rail at all, so the
+       menu would sit against the right edge. The phantom rail restores the
+       balance. :has() is the only way to ask "is the CTA absent"; where it is
+       unsupported the menu simply falls back to today's off-centre position. */
+    #topnav .container:not(:has(.buy-button))::after{content:"";order:3;flex:1 1 0}
+}
+
 /* The "More" submenu caret is absolutely positioned inside its <li> at a hard-coded
    top:30px (33px on hover), a number tuned for Landrick's old 74px row - so it slides
-   off the word as soon as the row height changes. Centring it on --gl-nav-row keeps it
-   level with the label at any logo height. 8px is the caret's own box: 3px of padding
-   each side plus the 2px border; rotate(45deg) does not change that layout box, so its
-   centre stays at top + 4px. The hover and active selectors are repeated because
-   Landrick sets those with !important. */
+   off the word as soon as the row height changes.
+
+   Centring the caret's BOX on the row is what put it ~3px low: the box is 8px square
+   (3px padding each side plus the 2px border) but the ink is only the right and bottom
+   borders, and rotate(45deg) swings that corner to the bottom centre, 5.66px below the
+   box centre (half of 8px x root 2). So the visible chevron occupies the lower half of
+   the box, from the centre down, and its middle sits at box top + 6.8px. Subtracting
+   that from half the row is what actually levels it with the label - and it reproduces
+   Landrick's own 30px on their 74px row (37 - 6.8 = 30.2), which is where their number
+   came from.
+
+   On hover the caret flips to 225deg, so the same ink moves to the UPPER half and its
+   middle sits at box top + 1.2px. It therefore needs its own value; sharing one number
+   is what made the arrow jump when the mouse arrived. The hover and active selectors
+   are repeated because Landrick sets those with !important, and hover is written last
+   so it wins on an item that is both active and hovered. */
 @media (min-width:992px){
     #topnav .navigation-menu>.has-submenu>.menu-arrow,
-    #topnav .navigation-menu>.has-submenu.active>.menu-arrow,
+    #topnav .navigation-menu>.has-submenu.active>.menu-arrow{
+        top:calc(var(--gl-nav-row) / 2 - 6.8px)!important;
+    }
+
     #topnav .navigation-menu>.has-submenu:hover>.menu-arrow{
-        top:calc((var(--gl-nav-row) - 8px) / 2)!important;
+        top:calc(var(--gl-nav-row) / 2 - 1.2px)!important;
     }
 }
