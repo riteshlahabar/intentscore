@@ -297,7 +297,7 @@
    short paragraph there, so the client opens the link and sees mostly empty
    colour before any of it.
 
-   Cut to a flat 80px (52px on mobile) across all four designs.
+   Cut to a flat 120px (78px on mobile) across all four designs.
 
    Selectors are prefixed with #home - the id every design puts on its hero
    section - so they carry id specificity and beat the vendor rules even
@@ -307,9 +307,9 @@
    ------------------------------------------------------------------ */
 #home.bg-half-260,
 #home.bg-half-170,
-#home.bg-home { padding: 80px 0; }
+#home.bg-home { padding: 120px 0; }
 
-#home.bg-consulting { height: auto; padding: 80px 0; }
+#home.bg-consulting { height: auto; padding: 120px 0; }
 
 /* The utility classes the hero markup adds on top of the band's own padding.
    .mt-md-5/.pt-md-5 are Bootstrap utilities and carry !important, so the
@@ -322,5 +322,5 @@
     #home.bg-half-260,
     #home.bg-half-170,
     #home.bg-home,
-    #home.bg-consulting { padding: 52px 0; }
+    #home.bg-consulting { padding: 78px 0; }
 }
