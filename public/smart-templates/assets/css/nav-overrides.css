@@ -46,8 +46,15 @@
 
 /* Landrick centres the CTA with `line-height:74px`, which only works because an
    inline-block button happens to sit near the middle of that line box. Flex is
-   exact, and it tracks --gl-nav-row. */
-#topnav .buy-button{display:flex;align-items:center;height:var(--gl-nav-row);line-height:normal}
+   exact, and it tracks --gl-nav-row.
+
+   The !important is not cosmetic: the <ul> carries Bootstrap's `d-none d-md-inline-block`,
+   and `.d-md-inline-block` is `display:inline-block!important`, which otherwise wins.
+   The media query matches Bootstrap's own md breakpoint so that below 768px `d-none`
+   still hides the CTA instead of this rule forcing it back on. */
+@media (min-width:768px){
+    #topnav .buy-button{display:flex!important;align-items:center;height:var(--gl-nav-row);line-height:normal}
+}
 
 @media (max-width:991.98px){
     /* Matches the .85 logo scaling in groomer-loop-theme.css. */
