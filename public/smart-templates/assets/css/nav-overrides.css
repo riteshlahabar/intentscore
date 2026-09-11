@@ -1,11 +1,11 @@
 /* Taller sticky header for the Smart Page designs (Landrick's default is quite slim for our text-based brand + longer menu). */
-#topnav .container{padding-top:12px;padding-bottom:12px}
+#topnav .container{padding-top:8px;padding-bottom:8px}
 
 #topnav{transition:all .005s ease}
 
 /* Landrick sizes the menu row at 74px (25px padding above and below a 24px line,
    with min-height:62px behind it) and pins .buy-button's line-height to the same
-   74px so the CTA lines up with the links. Both are cut to 60px together - moving
+   74px so the CTA lines up with the links. Both are cut to 51px together - moving
    one alone would leave the button sitting off the link baseline. */
-#topnav .navigation-menu>li>a{padding-top:18px;padding-bottom:18px;min-height:60px}
-#topnav .buy-button{line-height:60px}
+#topnav .navigation-menu>li>a{padding-top:13px;padding-bottom:14px;min-height:51px}
+#topnav .buy-button{line-height:51px}
