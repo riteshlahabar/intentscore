@@ -46,5 +46,5 @@
    72px of top padding is a lot in front of a short section, and a Smart Page
    stacks several of them. The heading's own margin-bottom is already modest here
    (.section-head{margin-bottom:16px}), so only the section padding changes. */
-.client-section{padding:38px 18px}
-@media(max-width:600px){.client-section{padding:28px 15px}}
+.client-section{padding:30px 18px}
+@media(max-width:600px){.client-section{padding:22px 15px}}
