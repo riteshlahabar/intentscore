@@ -11,11 +11,24 @@
     // shown a broken fetch; the section then falls back to its typed copy alone.
     $ig = $instagramAudit ?? null;
     $igShow = $ig && in_array($ig->status, ['completed', 'partial'], true) && $ig->followers !== null;
+
+    // The card's top margin separates it from the typed copy above it, not from the
+    // section heading. When the section carries no copy - the three audit fields and
+    // the free-text block all empty - the card sits directly under the heading, and
+    // that margin would add to the heading's own gap and make this one section stand
+    // apart from every other. So it is applied only when there is something above.
+    //
+    // The section is named $section inside the design loops and $instagramSection in
+    // the social-marketing design, which renders it outside the loop.
+    $igSection = $section ?? $instagramSection ?? null;
+    $igLead = (bool) ($igSection?->content)
+        || collect(['observation', 'problem', 'recommendation'])
+            ->contains(fn ($key) => $igSection && $igSection->field($key) !== '');
 @endphp
 
 @if($igShow)
     <style>
-        .ig-audit{margin-top:24px;max-width:720px;margin-left:auto;margin-right:auto;text-align:left;border:1px solid #e7ecea;border-radius:12px;background:#fff;padding:20px}
+        .ig-audit{margin-top:0;max-width:720px;margin-left:auto;margin-right:auto;text-align:left;border:1px solid #e7ecea;border-radius:12px;background:#fff;padding:20px}
         .ig-audit-head{display:flex;align-items:center;gap:14px}
         .ig-audit-avatar{width:66px;height:66px;border-radius:50%;object-fit:cover;border:1px solid #e7ecea;flex:none;background:#f4f6f7}
         .ig-audit-avatar-blank{display:grid;place-items:center;color:#b9c1c8;font-size:26px}
@@ -33,9 +46,10 @@
         .ig-audit-line a{color:#6a3ad6;text-decoration:none}
         .ig-audit-foot{font-size:11px;color:#8b949e;margin-top:16px;padding-top:12px;border-top:1px solid #f1f3f4}
         .ig-audit-foot a{color:#6a3ad6;text-decoration:none;font-weight:650}
+        .ig-audit.ig-audit-lead{margin-top:24px}
         @media(max-width:520px){.ig-audit{padding:16px}.ig-audit-counts{gap:18px}}
     </style>
-    <div class="ig-audit">
+    <div class="ig-audit{{ $igLead ? ' ig-audit-lead' : '' }}">
         <div class="ig-audit-head">
             @if($ig->profile_pic)
                 <img src="{{ $ig->profile_pic }}" alt="{{ $ig->username }}" class="ig-audit-avatar" loading="lazy">

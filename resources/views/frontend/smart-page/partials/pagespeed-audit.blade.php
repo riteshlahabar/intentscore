@@ -3,10 +3,19 @@
         ->filter(fn ($audit) => $audit && $audit->status === 'completed');
     $psiTierOf = fn (?int $score) => $score === null ? 'na' : ($score >= 90 ? 'good' : ($score >= 50 ? 'ok' : 'poor'));
     $psiUid = 'psi-'.uniqid();
+
+    // The card's top margin separates it from the typed copy above it, not from the
+    // section heading. With the three audit fields and the free-text block all empty
+    // the card sits directly under the heading, and that margin would add to the
+    // heading's own gap and make this section stand apart from every other one, so it
+    // is applied only when there is something above. Mirrors partials/instagram-audit.
+    $psiLead = (bool) (($section ?? null)?->content)
+        || collect(['observation', 'problem', 'recommendation'])
+            ->contains(fn ($key) => isset($section) && $section->field($key) !== '');
 @endphp
 @if($psiCards->isNotEmpty())
     <style>
-        .psi-audit{margin-top:24px;max-width:720px;margin-left:auto;margin-right:auto;text-align:left;border:1px solid #e7ecea;border-radius:12px;overflow:hidden;background:#fff}
+        .psi-audit{margin-top:0;max-width:720px;margin-left:auto;margin-right:auto;text-align:left;border:1px solid #e7ecea;border-radius:12px;overflow:hidden;background:#fff}
         .psi-tabs{display:flex;gap:4px;border-bottom:1px solid #e7ecea;padding:10px 14px 0}
         .psi-tabs label{padding:9px 14px;font-size:12.5px;font-weight:700;color:#67727e;cursor:pointer;border-bottom:2px solid transparent;user-select:none}
         .psi-panels{padding:20px}
@@ -21,6 +30,7 @@
         .psi-vitals{display:flex;flex-wrap:wrap;gap:16px;margin-top:18px;padding-top:16px;border-top:1px solid #f1f3f4}
         .psi-vital-label{font-size:10px;color:#67727e}
         .psi-vital-value{font-size:12.5px;font-weight:700;margin-top:2px}
+        .psi-audit.psi-audit-lead{margin-top:24px}
         #{{ $psiUid }}-mobile:checked ~ .psi-audit .psi-panel-mobile,
         #{{ $psiUid }}-desktop:checked ~ .psi-audit .psi-panel-desktop{display:grid}
         #{{ $psiUid }}-mobile:checked ~ .psi-audit .psi-tabs label[for="{{ $psiUid }}-mobile"],
@@ -29,7 +39,7 @@
     </style>
     @if($psiCards->has('mobile'))<input type="radio" name="{{ $psiUid }}" id="{{ $psiUid }}-mobile" hidden checked>@endif
     @if($psiCards->has('desktop'))<input type="radio" name="{{ $psiUid }}" id="{{ $psiUid }}-desktop" hidden {{ !$psiCards->has('mobile') ? 'checked' : '' }}>@endif
-    <div class="psi-audit">
+    <div class="psi-audit{{ $psiLead ? ' psi-audit-lead' : '' }}">
         @if($psiCards->count() > 1)
             <div class="psi-tabs">
                 <label for="{{ $psiUid }}-mobile" data-track="section_clicked" data-section="website_audit" data-label="Mobile Website Audit">Mobile</label>
