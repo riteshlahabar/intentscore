@@ -286,3 +286,41 @@
    whether or not a <p> follows the heading inside it — the :last-child rule above
    only governs the heading's own margin, which stays intact where that <p> exists. */
 .section .section-title.mb-4.pb-2 { margin-bottom: 16px !important; padding-bottom: 0 !important; }
+
+/* ---------------------------------------------------------------------
+   8. Hero band height
+   Landrick sizes the hero for a marketing site whose first screen is the
+   whole pitch, so the band below the header bar is enormous: agency uses
+   .bg-half-260 (260px top and bottom), modern-business .bg-half-170,
+   consulting a full 100vh, and social-marketing stacks .margin-top-100 on
+   top of .mt-md-5.pt-md-5 for 196px. A Smart Page puts its heading and one
+   short paragraph there, so the client opens the link and sees mostly empty
+   colour before any of it.
+
+   Cut to a flat 80px (52px on mobile) across all four designs.
+
+   Selectors are prefixed with #home - the id every design puts on its hero
+   section - so they carry id specificity and beat the vendor rules even
+   where those are restated inside a media query. style.min.css itself is
+   never edited: it is a vendor build and a template update would overwrite
+   any change made there.
+   ------------------------------------------------------------------ */
+#home.bg-half-260,
+#home.bg-half-170,
+#home.bg-home { padding: 80px 0; }
+
+#home.bg-consulting { height: auto; padding: 80px 0; }
+
+/* The utility classes the hero markup adds on top of the band's own padding.
+   .mt-md-5/.pt-md-5 are Bootstrap utilities and carry !important, so the
+   override has to as well; .margin-top-100 is Landrick's own and does not. */
+#home .mt-md-5 { margin-top: 0 !important; }
+#home .pt-md-5 { padding-top: 0 !important; }
+#home .margin-top-100 { margin-top: 0; }
+
+@media (max-width: 768px) {
+    #home.bg-half-260,
+    #home.bg-half-170,
+    #home.bg-home,
+    #home.bg-consulting { padding: 52px 0; }
+}
