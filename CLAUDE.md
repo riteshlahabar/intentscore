@@ -101,15 +101,107 @@ Redis, no cron dependency for core features. See `README.md` and `ARCHITECTURE.m
 - Admin sidebar shows the logo alone; the company name is kept only as a text fallback
   for when no logo is uploaded. Its old `images/logo.svg` fallback no longer existed.
 
+### Instagram: diagnosed live on the server, not guessed
+
+Access this time was through cPanel (MilesWeb, `turnkeyinfotech.in:2083`) → Terminal,
+driven from the browser. **The Laravel root is `/home/hrnkutuc/public_html/offer.groomerloop.com`**
+— not a folder named after the domain in `~`, which cost a couple of wrong `cd`s.
+
+What the evidence ruled out, in order:
+
+- All three worker routes registered (`pending`, `result`, `session`).
+- **0 pending audits** (11 completed, 9 failed) — so the queue was not stuck and the
+  worker was reaching the portal. The "worker PC is off" theory was wrong.
+- The stored cookie is complete: 411 chars with `sessionid`, `csrftoken`, `mid`,
+  `ds_user_id`, `ig_did` all present. So the 2026-09-09 bare-cookie cause was not it.
+- `portal_url` in the PC's `config.php` still pointed at the old
+  `intentscore.turnkeyinfotech.live`. Tempting, but **not** the cause: both domains serve
+  the same app and database, and each returned the identical 411-char cookie. Worth
+  correcting anyway; the user did that themselves.
+
+What it actually is: a probe with the exact worker headers returned
+
+    HTTP/1.1 429 Too Many Requests
+    Content-Type: text/html            <- an HTML error page, not JSON
+    <html class="no-js logged-in ">    <- the session is alive
+    <title>Page Not Found</title>
+
+`logged-in` is the key: the cookie is valid, the request is well-formed
+(`x-ig-app-id`, `x-asbd-id`, `x-csrftoken`, referer, origin all present), and Instagram
+still refuses. **The account is soft-blocked at the API level.** It may still browse,
+which is why the profile-page fallback keeps working. No code change can fix this.
+
+**The permanent split to remember: profile information is never blocked; per-post likes
+and comments come only from the blocked JSON endpoint.** So follower/following/post
+counts, bio, category and picture always arrive, while engagement rate, avg likes,
+avg comments, posts per month, last-post date, and the engagement and consistency
+scores cannot be obtained at all until the account is swapped or the Graph API is used.
+
+### Decisions taken as a result
+
+- **The engagement request is switched off.** `instagramProfile()` is commented out — not
+  deleted — at both call sites in `worker.php`, with a note on how to restore it. Every
+  audit went straight to a blocked request before falling back anyway. Both copies were
+  edited, `C:\local_pc_instagram_script\worker.php` and the one in the repo, so they do
+  not drift.
+- **A throttled read is no longer recorded as `completed`.** `InstagramProfileService`
+  saves `partial` with the reason in `error_message` when a public account returns no
+  posts. A private account stays `completed` — it has no posts to read, so the audit is
+  as complete as it will ever be. `Prospect::latestInstagramAudit()` includes `partial`,
+  and the admin badge keys off the status rather than inferring it from a null rate.
+- Instagram Graph API was raised as the permanent fix and **the user declined it** for now.
+- Three `$user['key'] ?: null` reads became `($user['key'] ?? null) ?: null`. Latent —
+  real payloads always carry those keys — but it warned on a sparse fixture.
+
+### The worker was never running automatically
+
+`schtasks` showed **no scheduled task for the worker at all**. Every run in `worker.log`
+was someone double-clicking `run.bat` by hand. `run.bat` does ONE pass and exits — it was
+written for Task Scheduler to repeat — so `poll_seconds: 10` had never had any effect,
+because that setting only applies to `--loop`, which nothing was running. Clicking
+"Fetch Profile" queued a row that nobody watched.
+
+Added `run-loop.bat`: runs `worker.php --loop`, restarts itself 15 seconds after any
+exit, and a shortcut to it now sits in the user's Startup folder. It must be started by
+hand once after being created — a Startup shortcut does nothing retroactively, which
+briefly looked like a second bug.
+
+### Admin: the audit card polls instead of being refreshed by hand
+
+The click queues a job the worker fulfils seconds later, but nothing watched for the
+result, so the card kept showing the PREVIOUS audit — which reads as "my edit was
+ignored" when the username has just been changed, and had the user refreshing four or
+five times. `admin/prospects/show.blade.php` now reloads every 5s while an audit is
+pending, capped at 24 tries (2 minutes) with an on-screen reason when it gives up, keyed
+per pending audit id so a new fetch gets a fresh budget, and paused while the tab is
+hidden. Whole-page reload is deliberate: the card is server-rendered, so a status
+endpoint would only duplicate that rendering.
+
 ### Open
 
-- **`ProspectController::regenerateLink` is now misleading.** It rotates `slug`, which no
+- **The `partial` message is now inaccurate.** It says "Instagram limited the detailed
+  request", but the request is no longer sent at all. Reword to something like
+  "Engagement scoring is switched off — profile information only".
+- **11 rows still need backfilling.** They are `completed` with a null engagement rate on
+  public accounts, i.e. really `partial`. Because the badge now keys off the status, those
+  rows currently show *no* "Limited data" note where they used to — the change made old
+  data less informative until this runs. Claude is blocked from writing to the live
+  database, so the user must run it:
+
+      php artisan tinker --execute='App\Models\SmartLink\InstagramAudit::where("status","completed")->whereNull("engagement_rate")->where("is_private",0)->update(["status"=>"partial","error_message"=>"..."]);'
+
+- **`overallScore()` overstates a partial audit.** It averages only the non-null scores,
+  so a throttled row shows "45/100" computed from 2 of 4 checks and looks like a full
+  score. Flagged, deliberately not changed — labelling it "based on 2 of 4 checks" was
+  offered and not yet taken up.
+- **`ProspectController::regenerateLink` is misleading.** It rotates `slug`, which no
   longer affects the public URL, yet still tells the user "The old link no longer works".
   It only invalidates legacy `/s/...` links. Decide between removing the button and
   making it deactivate the row and create a new one (new id = genuinely new URL).
-- Still nothing tested against a database — MySQL refused connections on
-  127.0.0.1:3306 all session. Verified instead by rendering partials through
-  `artisan tinker`, matching URLs against the router, and compiling every Blade.
+- Nothing was tested against the local database — MySQL refused connections on
+  127.0.0.1:3306 all session. Verification was by rendering partials through
+  `artisan tinker`, matching URLs against the router, compiling every Blade, and reading
+  the live production database through cPanel.
 - Still no automated tests for the worker endpoints, audit services, or the new routes.
 
 ## Session notes — 2026-09-09
