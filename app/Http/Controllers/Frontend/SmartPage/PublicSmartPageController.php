@@ -42,6 +42,7 @@ class PublicSmartPageController extends Controller
             'settings' => Setting::pluck('value', 'key'),
             'mobileAudit' => $page->prospect->latestAuditFor('mobile'),
             'desktopAudit' => $page->prospect->latestAuditFor('desktop'),
+            'instagramAudit' => $page->prospect->latestInstagramAudit(),
         ]);
     }
 

@@ -165,6 +165,7 @@
                             @endif
                         @endforeach
                     </ul>
+                    @include('frontend.smart-page.partials.instagram-audit')
                 </div>
             </div><!--end col-->
         </div><!--end row-->
